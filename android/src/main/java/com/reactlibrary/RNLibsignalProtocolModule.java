@@ -91,6 +91,7 @@ public class RNLibsignalProtocolModule extends ReactContextBaseJavaModule {
       protocolStorage.setLocalRegistrationId(registrationId);
       promise.resolve(registrationId);
     } catch (Exception e) {
+      e.printStackTrace();
       promise.reject(RN_LIBSIGNAL_ERROR, e.getMessage());
     }
   }
@@ -118,6 +119,7 @@ public class RNLibsignalProtocolModule extends ReactContextBaseJavaModule {
 
       promise.resolve(preKeyMapsArray);
     } catch (Exception e) {
+      e.printStackTrace();
       promise.reject(RN_LIBSIGNAL_ERROR, e.getMessage());
     }
   }
@@ -146,6 +148,7 @@ public class RNLibsignalProtocolModule extends ReactContextBaseJavaModule {
 
       promise.resolve(signedPreKeyMap);
     } catch (Exception e) {
+      e.printStackTrace();
       promise.reject(RN_LIBSIGNAL_ERROR, e.getMessage());
     }
   }
@@ -180,10 +183,10 @@ public class RNLibsignalProtocolModule extends ReactContextBaseJavaModule {
       sessionBuilder.process(preKeyBundle);
       promise.resolve(true);
     } catch (InvalidKeyException e) {
-      Log.d(ProtocolStorage.LOGTAG, "Encountered InvalidKeyException for the recepient " + recipientId);
+      e.printStackTrace();
       promise.reject(RN_LIBSIGNAL_ERROR, e.getMessage());
     } catch (UntrustedIdentityException e) {
-      Log.d(ProtocolStorage.LOGTAG, "Encountered UntrustedIdentityException for the recepient " + recipientId);
+      e.printStackTrace();
       promise.reject(RN_LIBSIGNAL_ERROR, e.getMessage());
     }
   }
@@ -198,8 +201,10 @@ public class RNLibsignalProtocolModule extends ReactContextBaseJavaModule {
       promise.resolve(Base64.encodeToString(messageEncryped.serialize(), Base64.DEFAULT));
     } catch (UntrustedIdentityException e) {
       e.printStackTrace();
+      promise.reject(RN_LIBSIGNAL_ERROR, e.getMessage());
     } catch (UnsupportedEncodingException e) {
       e.printStackTrace();
+      promise.reject(RN_LIBSIGNAL_ERROR, e.getMessage());
     }
   }
 
@@ -212,23 +217,26 @@ public class RNLibsignalProtocolModule extends ReactContextBaseJavaModule {
       messageDecrypted = sessionCipher.decrypt(new PreKeySignalMessage(Base64.decode(message, Base64.DEFAULT)));
       promise.resolve(new String (messageDecrypted));
     } catch (UntrustedIdentityException e) {
-      promise.reject(RN_LIBSIGNAL_ERROR, e.getMessage());
       e.printStackTrace();
+      promise.reject(RN_LIBSIGNAL_ERROR, e.getMessage());
     } catch (LegacyMessageException e) {
-      promise.reject(RN_LIBSIGNAL_ERROR, e.getMessage());
       e.printStackTrace();
+      promise.reject(RN_LIBSIGNAL_ERROR, e.getMessage());
     } catch (InvalidMessageException e) {
-      promise.reject(RN_LIBSIGNAL_ERROR, e.getMessage());
       e.printStackTrace();
+      promise.reject(RN_LIBSIGNAL_ERROR, e.getMessage());
     } catch (DuplicateMessageException e) {
-      promise.reject(RN_LIBSIGNAL_ERROR, e.getMessage());
       e.printStackTrace();
+      promise.reject(RN_LIBSIGNAL_ERROR, e.getMessage());
     } catch (InvalidVersionException e) {
       e.printStackTrace();
+      promise.reject(RN_LIBSIGNAL_ERROR, e.getMessage());
     } catch (InvalidKeyIdException e) {
       e.printStackTrace();
+      promise.reject(RN_LIBSIGNAL_ERROR, e.getMessage());
     } catch (InvalidKeyException e) {
       e.printStackTrace();
+      promise.reject(RN_LIBSIGNAL_ERROR, e.getMessage());
     }
   }
 }
