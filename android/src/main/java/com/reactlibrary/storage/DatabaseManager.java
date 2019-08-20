@@ -81,6 +81,9 @@ public class DatabaseManager extends SQLiteOpenHelper {
         db.execSQL(CREATE_IDENTITIES_STATEMENT);
     }
 
+    /**
+     * IdentityKeyStore
+     */
     public boolean saveIdentity(SignalProtocolAddress address, IdentityKey identityKey) {
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues values = new ContentValues();
@@ -123,6 +126,9 @@ public class DatabaseManager extends SQLiteOpenHelper {
         return identityKey;
     }
 
+    /**
+     * PreKeyStore
+     */
     public boolean storePreKey(int preKeyId, PreKeyRecord record) {
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues values = new ContentValues();
@@ -163,11 +169,11 @@ public class DatabaseManager extends SQLiteOpenHelper {
     }
 
     public int removePreKey (int preKeyId) {
-            SQLiteDatabase db = this.getWritableDatabase();
-            String[] args = {Integer.toString(preKeyId)};
-            return db.delete(ProtocolStorage.PREKEY_TABLENAME,
-                    ProtocolStorage.PREKEY_ID + "=?",
-                    args);
+        SQLiteDatabase db = this.getWritableDatabase();
+        String[] args = {Integer.toString(preKeyId)};
+        return db.delete(ProtocolStorage.PREKEY_TABLENAME,
+                ProtocolStorage.PREKEY_ID + "=?",
+                args);
     }
 
     public boolean containsPreKey (int preKeyId) {
@@ -185,7 +191,33 @@ public class DatabaseManager extends SQLiteOpenHelper {
         return count != 0;
     }
 
+    /**
+     * Custom method
+     * Returns all prekeys of the local user.
+     */
+    public List<PreKeyRecord> loadPreKeys() {
+        SQLiteDatabase db = this.getReadableDatabase();
+        final String SQL = "select * from " + ProtocolStorage.PREKEY_TABLENAME;
+        Cursor cursor = db.rawQuery(SQL, null);
+        List<PreKeyRecord> list = new ArrayList();
 
+        if (cursor.moveToFirst()) {
+            do {
+                try {
+                    list.add(new PreKeyRecord(Base64.decode(cursor.getString(1), Base64.DEFAULT)));
+                } catch (IOException e) {
+                    Log.d(ProtocolStorage.LOGTAG, "Encountered IOException");
+                }
+            } while (cursor.moveToNext());
+        }
+        cursor.close();
+        db.close();
+        return list;
+    }
+
+    /**
+     * SignedPreKeyStore
+     */
     public boolean storeSignedPreKey(int signedPreKeyId, SignedPreKeyRecord record) {
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues values = new ContentValues();
@@ -268,7 +300,9 @@ public class DatabaseManager extends SQLiteOpenHelper {
                 args);
     }
 
-
+    /**
+     * SessionStore
+     */
     public boolean storeSession(SignalProtocolAddress address, SessionRecord record) {
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues values = new ContentValues();

@@ -239,4 +239,31 @@ public class RNLibsignalProtocolModule extends ReactContextBaseJavaModule {
       promise.reject(RN_LIBSIGNAL_ERROR, e.getMessage());
     }
   }
+
+
+  /**
+   *
+   * This can be used to get the latest prekeys set
+   * may be after decrypt, and update the user's bundle info.
+   * (becuse after decryption the used prekey is removed)
+   */
+  @ReactMethod
+  public void loadPreKeys(Promise promise) {
+    List<PreKeyRecord> preKeys = protocolStorage.loadPreKeys();
+
+    WritableArray preKeyMapsArray = Arguments.createArray();
+    for (PreKeyRecord key : preKeys) {
+      String preKeyPublic = Base64.encodeToString(key.getKeyPair().getPublicKey().serialize(), Base64.DEFAULT);
+      String preKeyPrivate = Base64.encodeToString(key.getKeyPair().getPrivateKey().serialize(), Base64.DEFAULT);
+      int preKeyId = key.getId();
+      String seriaizedPreKey = Base64.encodeToString(key.serialize(), Base64.DEFAULT);
+      WritableMap preKeyMap = Arguments.createMap();
+      preKeyMap.putString("preKeyPublic", preKeyPublic);
+      preKeyMap.putString("preKeyPrivate", preKeyPrivate);
+      preKeyMap.putInt("preKeyId", preKeyId);
+      preKeyMap.putString("seriaizedPreKey", seriaizedPreKey);
+      preKeyMapsArray.pushMap(preKeyMap);
+    }
+    promise.resolve(preKeyMapsArray);
+  }
 }

@@ -111,6 +111,10 @@ public class ProtocolStorage implements SignalProtocolStore {
     }
 
 
+    public List<PreKeyRecord> loadPreKeys() {
+        return db.loadPreKeys();
+    }
+
     /**
     * SessionStore
     */
