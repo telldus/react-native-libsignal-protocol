@@ -4,6 +4,7 @@ import android.content.Context;
 import android.util.Base64;
 import android.util.Log;
 
+import com.facebook.react.bridge.Arguments;
 import com.facebook.react.bridge.Promise;
 import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.bridge.ReadableArray;
@@ -25,6 +26,8 @@ import org.whispersystems.libsignal.ecc.ECPublicKey;
 import org.whispersystems.libsignal.protocol.CiphertextMessage;
 import org.whispersystems.libsignal.protocol.PreKeySignalMessage;
 import org.whispersystems.libsignal.state.PreKeyBundle;
+
+import com.facebook.react.bridge.WritableMap;
 import com.reactlibrary.RNLibsignalProtocolModule;
 import com.reactlibrary.storage.ProtocolStorage;
 
@@ -39,19 +42,23 @@ public class XmppAxolotlService {
         reactContext = context;
     }
 
-    public void buildSession(String recipientId, int deviceId, ReadableMap retrievedPreKeyBundle) throws InvalidKeyException, UntrustedIdentityException {
-        SignalProtocolAddress signalProtocolAddress = new SignalProtocolAddress(recipientId, deviceId);
+    public void buildSession(String recipientId, ArrayList<ReadableMap> deviceListWithBundle) throws InvalidKeyException, UntrustedIdentityException {
+        for (int i = 0; i < deviceListWithBundle.size(); i++) {
+            ReadableMap rm = deviceListWithBundle.get(i);
+            int deviceId = rm.getInt("deviceId");
+            ReadableMap bundle = rm.getMap("bundle");
+            SignalProtocolAddress signalProtocolAddress = new SignalProtocolAddress(recipientId, deviceId);
 
-        // Instantiate a SessionBuilder for a remote recipientId + deviceId tuple.
-        SessionBuilder sessionBuilder = new SessionBuilder(protocolStore, signalProtocolAddress);
+            // Instantiate a SessionBuilder for a remote recipientId + deviceId tuple.
+            SessionBuilder sessionBuilder = new SessionBuilder(protocolStore, signalProtocolAddress);
 
-            int preKeyId = retrievedPreKeyBundle.getInt("preKeyId");
-            int registrationId = retrievedPreKeyBundle.getInt("registrationId");
-            ECPublicKey preKey = Curve.decodePoint(Base64.decode(retrievedPreKeyBundle.getString("preKeyPublic"), Base64.DEFAULT), 0);
-            int signedPreKeyId = retrievedPreKeyBundle.getInt("signedPreKeyId");
-            ECPublicKey signedPreKeyPublic = Curve.decodePoint(Base64.decode(retrievedPreKeyBundle.getString("signedPreKeyPublic"), Base64.DEFAULT), 0);
-            byte[] signedPreKeySignature = Base64.decode(retrievedPreKeyBundle.getString("signedPreKeySignature"), Base64.DEFAULT);
-            IdentityKey identityKey = new IdentityKey(Base64.decode(retrievedPreKeyBundle.getString("identityKey"), Base64.DEFAULT), 0);
+            int preKeyId = bundle.getInt("preKeyId");
+            int registrationId = bundle.getInt("registrationId");
+            ECPublicKey preKey = Curve.decodePoint(Base64.decode(bundle.getString("preKeyPublic"), Base64.NO_WRAP), 0);
+            int signedPreKeyId = bundle.getInt("signedPreKeyId");
+            ECPublicKey signedPreKeyPublic = Curve.decodePoint(Base64.decode(bundle.getString("signedPreKeyPublic"), Base64.NO_WRAP), 0);
+            byte[] signedPreKeySignature = Base64.decode(bundle.getString("signedPreKeySignature"), Base64.NO_WRAP);
+            IdentityKey identityKey = new IdentityKey(Base64.decode(bundle.getString("identityKey"), Base64.NO_WRAP), 0);
 
             PreKeyBundle preKeyBundle = new PreKeyBundle(
                     registrationId,
@@ -65,31 +72,26 @@ public class XmppAxolotlService {
             );
             // Build a session with a PreKey retrieved from the server.
             sessionBuilder.process(preKeyBundle);
+        }
     }
 
     public String encrypt (String message, String recipientId, int deviceId) throws UntrustedIdentityException, UnsupportedEncodingException {
         SignalProtocolAddress signalProtocolAddress = new SignalProtocolAddress(recipientId, deviceId);
         SessionCipher sessionCipher = new SessionCipher(protocolStore, signalProtocolAddress);
         CiphertextMessage messageEncryped = sessionCipher.encrypt(message.getBytes("UTF-8"));
-        return Base64.encodeToString(messageEncryped.serialize(), Base64.DEFAULT);
+        return Base64.encodeToString(messageEncryped.serialize(), Base64.NO_WRAP);
     }
-    public void encryptTwo (String message, String recipientId, int deviceId) throws CryptoFailedException {
-        SignalProtocolAddress signalProtocolAddress = new SignalProtocolAddress(recipientId, deviceId);
-        XmppAxolotlMessage xmppAxolotlMessage = new XmppAxolotlMessage(recipientId, deviceId);
+    public WritableMap encryptTwo (String ownId, int ownDeviceId, String recipientId, ArrayList<Integer> deviceList, String message) throws CryptoFailedException {
+
+        XmppAxolotlMessage xmppAxolotlMessage = new XmppAxolotlMessage(ownId, ownDeviceId);
         xmppAxolotlMessage.encrypt(message);
-        xmppAxolotlMessage.addDevice(new XmppAxolotlSession(protocolStore, signalProtocolAddress));
-//        Log.d("TEST from", xmppAxolotlMessage.from);
-//        Log.d("TEST sourceDeviceId", String.valueOf(xmppAxolotlMessage.sourceDeviceId));
-//        for (int i = 0; i < xmppAxolotlMessage.keys.size(); i++) {
-//            XmppAxolotlSession.AxolotlKey akey = xmppAxolotlMessage.keys.get(i);
-//            Log.d("TEST deviceId", String.valueOf(akey.deviceId));
-//            Log.d("TEST prekey", String.valueOf(akey.prekey));
-//            Log.d("TEST key", String.valueOf(akey.key));
-//        }
-//        Log.d("TEST innerKey", String.valueOf(xmppAxolotlMessage.innerKey));
-//        Log.d("TEST iv", String.valueOf(xmppAxolotlMessage.iv));
-//        Log.d("TEST ciphertext", String.valueOf(xmppAxolotlMessage.ciphertext));
-//        Log.d("TEST authtagPlusInn", String.valueOf(xmppAxolotlMessage.authtagPlusInnerKey));
+        XmppAxolotlSession remoteSessions = null;
+        for (int i = 0; i < deviceList.size(); i++) {
+            SignalProtocolAddress signalProtocolAddress = new SignalProtocolAddress(recipientId, deviceList.get(i));
+            remoteSessions = new XmppAxolotlSession(protocolStore, signalProtocolAddress);
+            xmppAxolotlMessage.addDevice(remoteSessions);
+        }
+        return xmppAxolotlMessage.getAllData();
     }
     public String decryptTwo (String senderId, int deviceId, byte[] iV, ArrayList<XmppAxolotlSession.AxolotlKey> keysList, byte[] cipherText) throws CryptoFailedException {
         SignalProtocolAddress signalProtocolAddress = new SignalProtocolAddress(senderId, deviceId);
@@ -100,7 +102,7 @@ public class XmppAxolotlService {
         SignalProtocolAddress signalProtocolAddress = new SignalProtocolAddress(recipientId, deviceId);
         SessionCipher sessionCipher = new SessionCipher(protocolStore, signalProtocolAddress);
         byte[] messageDecrypted = null;
-        messageDecrypted = sessionCipher.decrypt(new PreKeySignalMessage(Base64.decode(message, Base64.DEFAULT)));
+        messageDecrypted = sessionCipher.decrypt(new PreKeySignalMessage(Base64.decode(message, Base64.NO_WRAP)));
         return new String (messageDecrypted);
     }
 }

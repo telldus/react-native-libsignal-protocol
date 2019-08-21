@@ -23,14 +23,14 @@ public class PreferenceManager {
     }
     public void setIdentityKeyPair(IdentityKeyPair identityKeyPair) {
         SharedPreferences.Editor editor = pref.edit();
-        editor.putString("identityKeyPair", Base64.encodeToString(identityKeyPair.serialize(), Base64.DEFAULT));
+        editor.putString("identityKeyPair", Base64.encodeToString(identityKeyPair.serialize(), Base64.NO_WRAP));
         editor.commit();
     }
     public IdentityKeyPair getIdentityKeyPair() {
         String identityKeyPairString = pref.getString("identityKeyPair", null);
         IdentityKeyPair identityKeyPair = null;
         try {
-            identityKeyPair = new IdentityKeyPair(Base64.decode(identityKeyPairString, Base64.DEFAULT));
+            identityKeyPair = new IdentityKeyPair(Base64.decode(identityKeyPairString, Base64.NO_WRAP));
         } catch (InvalidKeyException e) {
             e.printStackTrace();
         }

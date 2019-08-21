@@ -1,5 +1,6 @@
 package com.reactlibrary.axolotl;
 
+import android.util.Base64;
 import android.util.Log;
 
 import java.security.InvalidAlgorithmParameterException;
@@ -19,6 +20,9 @@ import javax.crypto.SecretKey;
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 
+import com.facebook.react.bridge.Arguments;
+import com.facebook.react.bridge.WritableArray;
+import com.facebook.react.bridge.WritableMap;
 import com.reactlibrary.RNLibsignalProtocolModule;
 import com.reactlibrary.utils.Compatibility;
 
@@ -27,13 +31,13 @@ public class XmppAxolotlMessage {
     private static final String CIPHERMODE = "AES/GCM/NoPadding";
     private static final String PROVIDER = "BC";
 
-    public byte[] innerKey;
-    public byte[] ciphertext = null;
-    public byte[] authtagPlusInnerKey = null;
-    public byte[] iv = null;
-    public final List<XmppAxolotlSession.AxolotlKey> keys;
-    public final String from;
-    public final int sourceDeviceId;
+    private byte[] innerKey;
+    private byte[] ciphertext = null;
+    private byte[] authtagPlusInnerKey = null;
+    private byte[] iv = null;
+    private final List<XmppAxolotlSession.AxolotlKey> keys;
+    private final String from;
+    private final int sourceDeviceId;
     public XmppAxolotlMessage(String from, int sourceDeviceId) {
         this.from = from;
         this.sourceDeviceId = sourceDeviceId;
@@ -99,6 +103,22 @@ public class XmppAxolotlMessage {
         if (key != null) {
             keys.add(key);
         }
+    }
+
+    public WritableMap getAllData() {
+        WritableMap data = Arguments.createMap();
+        data.putString("ciphertext", Base64.encodeToString(ciphertext, Base64.NO_WRAP));
+        data.putString("iv", Base64.encodeToString(iv, Base64.NO_WRAP));
+        WritableArray keysList = Arguments.createArray();
+        for(XmppAxolotlSession.AxolotlKey key : keys) {
+            WritableMap keysRecord = Arguments.createMap();
+            keysRecord.putString("key", Base64.encodeToString(key.key, Base64.NO_WRAP));
+            keysRecord.putInt("deviceId", key.deviceId);
+            keysRecord.putBoolean("prekey", key.prekey);
+            keysList.pushMap(keysRecord);
+        }
+        data.putArray("keys", keysList);
+        return data;
     }
 
     private byte[] unpackKey(XmppAxolotlSession session, Integer sourceDeviceId) throws CryptoFailedException {

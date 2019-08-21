@@ -36,6 +36,7 @@ import java.io.UnsupportedEncodingException;
 import java.lang.Exception;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 
 public class RNLibsignalProtocolModule extends ReactContextBaseJavaModule {
@@ -63,9 +64,9 @@ public class RNLibsignalProtocolModule extends ReactContextBaseJavaModule {
   public void generateIdentityKeyPair(Promise promise) {
     try {
       IdentityKeyPair identityKeyPair = KeyHelper.generateIdentityKeyPair();
-      String publicKey = Base64.encodeToString(identityKeyPair.getPublicKey().serialize(), Base64.DEFAULT);
-      String privateKey = Base64.encodeToString(identityKeyPair.getPrivateKey().serialize(), Base64.DEFAULT);
-      String serializedKP = Base64.encodeToString(identityKeyPair.serialize(), Base64.DEFAULT);
+      String publicKey = Base64.encodeToString(identityKeyPair.getPublicKey().serialize(), Base64.NO_WRAP);
+      String privateKey = Base64.encodeToString(identityKeyPair.getPrivateKey().serialize(), Base64.NO_WRAP);
+      String serializedKP = Base64.encodeToString(identityKeyPair.serialize(), Base64.NO_WRAP);
       WritableMap keyPairMap = Arguments.createMap();
       keyPairMap.putString("publicKey", publicKey);
       keyPairMap.putString("privateKey", privateKey);
@@ -98,10 +99,10 @@ public class RNLibsignalProtocolModule extends ReactContextBaseJavaModule {
 
       WritableArray preKeyMapsArray = Arguments.createArray();
       for (PreKeyRecord key : preKeys) {
-        String preKeyPublic = Base64.encodeToString(key.getKeyPair().getPublicKey().serialize(), Base64.DEFAULT);
-        String preKeyPrivate = Base64.encodeToString(key.getKeyPair().getPrivateKey().serialize(), Base64.DEFAULT);
+        String preKeyPublic = Base64.encodeToString(key.getKeyPair().getPublicKey().serialize(), Base64.NO_WRAP);
+        String preKeyPrivate = Base64.encodeToString(key.getKeyPair().getPrivateKey().serialize(), Base64.NO_WRAP);
         int preKeyId = key.getId();
-        String seriaizedPreKey = Base64.encodeToString(key.serialize(), Base64.DEFAULT);
+        String seriaizedPreKey = Base64.encodeToString(key.serialize(), Base64.NO_WRAP);
         WritableMap preKeyMap = Arguments.createMap();
         preKeyMap.putString("preKeyPublic", preKeyPublic);
         preKeyMap.putString("preKeyPrivate", preKeyPrivate);
@@ -122,15 +123,15 @@ public class RNLibsignalProtocolModule extends ReactContextBaseJavaModule {
   @ReactMethod
   public void generateSignedPreKey(ReadableMap identityKeyPair, int signedKeyId, Promise promise) {
     try {
-      byte[] serialized = Base64.decode(identityKeyPair.getString("serializedKP"), Base64.DEFAULT);
+      byte[] serialized = Base64.decode(identityKeyPair.getString("serializedKP"), Base64.NO_WRAP);
 
       IdentityKeyPair IKP = new IdentityKeyPair(serialized);
       SignedPreKeyRecord signedPreKey = KeyHelper.generateSignedPreKey(IKP, signedKeyId);
-      String signedPreKeyPublic = Base64.encodeToString(signedPreKey.getKeyPair().getPublicKey().serialize(), Base64.DEFAULT);
-      String signedPreKeyPrivate = Base64.encodeToString(signedPreKey.getKeyPair().getPrivateKey().serialize(), Base64.DEFAULT);
-      String signedPreKeySignature = Base64.encodeToString(signedPreKey.getSignature(), Base64.DEFAULT);
+      String signedPreKeyPublic = Base64.encodeToString(signedPreKey.getKeyPair().getPublicKey().serialize(), Base64.NO_WRAP);
+      String signedPreKeyPrivate = Base64.encodeToString(signedPreKey.getKeyPair().getPrivateKey().serialize(), Base64.NO_WRAP);
+      String signedPreKeySignature = Base64.encodeToString(signedPreKey.getSignature(), Base64.NO_WRAP);
       int signedPreKeyId = signedPreKey.getId();
-      String seriaizedSignedPreKey = Base64.encodeToString(signedPreKey.serialize(), Base64.DEFAULT);
+      String seriaizedSignedPreKey = Base64.encodeToString(signedPreKey.serialize(), Base64.NO_WRAP);
       
       WritableMap signedPreKeyMap = Arguments.createMap();
       signedPreKeyMap.putString("signedPreKeyPublic", signedPreKeyPublic);
@@ -149,9 +150,19 @@ public class RNLibsignalProtocolModule extends ReactContextBaseJavaModule {
   }
 
   @ReactMethod
-  public void buildSession(String recipientId, int deviceId, ReadableMap retrievedPreKeyBundle, Promise promise) {
+  public void buildSession(String recipientId, ReadableArray deviceListAndBundle, Promise promise) {
     try {
-      xmppAxolotlService.buildSession(recipientId, deviceId, retrievedPreKeyBundle);
+      ArrayList<ReadableMap> deviceListWithBundle = new ArrayList<ReadableMap>();
+      for (int i = 0; i < deviceListAndBundle.size(); i++) {
+        ReadableMap rm = deviceListAndBundle.getMap(i);
+        WritableMap infoMapNew = Arguments.createMap();
+        WritableMap empty = Arguments.createMap();
+        empty.merge(rm.getMap("bundle"));
+        infoMapNew.putInt("deviceId", rm.getInt("deviceId"));
+        infoMapNew.putMap("bundle", empty);
+        deviceListWithBundle.add(infoMapNew);
+      }
+      xmppAxolotlService.buildSession(recipientId, deviceListWithBundle);
       promise.resolve(true);
     } catch (InvalidKeyException e) {
       e.printStackTrace();
@@ -176,10 +187,13 @@ public class RNLibsignalProtocolModule extends ReactContextBaseJavaModule {
   }
 
   @ReactMethod
-  public void encryptTwo (String message, String recipientId, int deviceId, Promise promise) {
+  public void encryptTwo (String ownId, int ownDeviceId, String recipientId, ReadableArray deviceList, String message, Promise promise) {
     try {
-      xmppAxolotlService.encryptTwo(message, recipientId, deviceId);
-      promise.resolve("DONE");
+      ArrayList<Integer> deviceIds = new ArrayList<Integer>();
+      for (int i = 0; i < deviceList.size(); i++) {
+        deviceIds.add(deviceList.getInt(i));
+      }
+      promise.resolve(xmppAxolotlService.encryptTwo(ownId, ownDeviceId, recipientId, deviceIds, message));
     } catch (CryptoFailedException e) {
       e.printStackTrace();
       promise.reject(RN_LIBSIGNAL_ERROR, e.getMessage());
@@ -242,10 +256,10 @@ public class RNLibsignalProtocolModule extends ReactContextBaseJavaModule {
 
     WritableArray preKeyMapsArray = Arguments.createArray();
     for (PreKeyRecord key : preKeys) {
-      String preKeyPublic = Base64.encodeToString(key.getKeyPair().getPublicKey().serialize(), Base64.DEFAULT);
-      String preKeyPrivate = Base64.encodeToString(key.getKeyPair().getPrivateKey().serialize(), Base64.DEFAULT);
+      String preKeyPublic = Base64.encodeToString(key.getKeyPair().getPublicKey().serialize(), Base64.NO_WRAP);
+      String preKeyPrivate = Base64.encodeToString(key.getKeyPair().getPrivateKey().serialize(), Base64.NO_WRAP);
       int preKeyId = key.getId();
-      String seriaizedPreKey = Base64.encodeToString(key.serialize(), Base64.DEFAULT);
+      String seriaizedPreKey = Base64.encodeToString(key.serialize(), Base64.NO_WRAP);
       WritableMap preKeyMap = Arguments.createMap();
       preKeyMap.putString("preKeyPublic", preKeyPublic);
       preKeyMap.putString("preKeyPrivate", preKeyPrivate);

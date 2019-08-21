@@ -90,7 +90,7 @@ public class DatabaseManager extends SQLiteOpenHelper {
         values.put(ProtocolStorage.NAME, address.getName());
         values.put(ProtocolStorage.DEVICE_ID, address.getDeviceId());
         values.put(ProtocolStorage.SIGNAL_PROTOCOL_ADDRESS, address.toString());
-        values.put(ProtocolStorage.IDENTITY_RECORD, Base64.encodeToString(identityKey.serialize(), Base64.DEFAULT));
+        values.put(ProtocolStorage.IDENTITY_RECORD, Base64.encodeToString(identityKey.serialize(), Base64.NO_WRAP));
         String where = ProtocolStorage.SIGNAL_PROTOCOL_ADDRESS + "=?";
         String[] whereArgs = {address.toString()};
         int rows = db.update(ProtocolStorage.IDENTITIES_TABLENAME, values, where, whereArgs);
@@ -118,7 +118,7 @@ public class DatabaseManager extends SQLiteOpenHelper {
         db.close();
         IdentityKey identityKey = null;
         try {
-            byte[] identityBytes = Base64.decode(identity, Base64.DEFAULT);
+            byte[] identityBytes = Base64.decode(identity, Base64.NO_WRAP);
             identityKey = new IdentityKey(identityBytes, 0);
         } catch (InvalidKeyException e) {
             Log.d(ProtocolStorage.LOGTAG, "Encountered invalid IdentityKey in database for address " + address.toString());
@@ -133,7 +133,7 @@ public class DatabaseManager extends SQLiteOpenHelper {
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues values = new ContentValues();
         values.put(ProtocolStorage.PREKEY_ID, preKeyId);
-        values.put(ProtocolStorage.PREKEY_RECORD, Base64.encodeToString(record.serialize(), Base64.DEFAULT));
+        values.put(ProtocolStorage.PREKEY_RECORD, Base64.encodeToString(record.serialize(), Base64.NO_WRAP));
         String where = ProtocolStorage.PREKEY_ID + "=?";
         String[] whereArgs = {String.valueOf(preKeyId)};
         int rows = db.update(ProtocolStorage.PREKEY_TABLENAME, values, where, whereArgs);
@@ -161,7 +161,7 @@ public class DatabaseManager extends SQLiteOpenHelper {
         cursor.close();
         db.close();
         try {
-            preKeyRecord = new PreKeyRecord(Base64.decode(prekeyRec, Base64.DEFAULT));
+            preKeyRecord = new PreKeyRecord(Base64.decode(prekeyRec, Base64.NO_WRAP));
         } catch (IOException e) {
             Log.d(ProtocolStorage.LOGTAG, "Encountered IOException for id " + String.valueOf(preKeyId));
         }
@@ -204,7 +204,7 @@ public class DatabaseManager extends SQLiteOpenHelper {
         if (cursor.moveToFirst()) {
             do {
                 try {
-                    list.add(new PreKeyRecord(Base64.decode(cursor.getString(1), Base64.DEFAULT)));
+                    list.add(new PreKeyRecord(Base64.decode(cursor.getString(1), Base64.NO_WRAP)));
                 } catch (IOException e) {
                     Log.d(ProtocolStorage.LOGTAG, "Encountered IOException");
                 }
@@ -222,7 +222,7 @@ public class DatabaseManager extends SQLiteOpenHelper {
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues values = new ContentValues();
         values.put(ProtocolStorage.SIGNED_PREKEY_ID, signedPreKeyId);
-        values.put(ProtocolStorage.SIGNED_PREKEY_RECORD, Base64.encodeToString(record.serialize(), Base64.DEFAULT));
+        values.put(ProtocolStorage.SIGNED_PREKEY_RECORD, Base64.encodeToString(record.serialize(), Base64.NO_WRAP));
         String where = ProtocolStorage.SIGNED_PREKEY_ID + "=?";
         String[] whereArgs = {String.valueOf(signedPreKeyId)};
         int rows = db.update(ProtocolStorage.SIGNED_PREKEY_TABLENAME, values, where, whereArgs);
@@ -250,7 +250,7 @@ public class DatabaseManager extends SQLiteOpenHelper {
         cursor.close();
         db.close();
         try {
-            sPreKeyRecord = new SignedPreKeyRecord(Base64.decode(sPrekeyRec, Base64.DEFAULT));
+            sPreKeyRecord = new SignedPreKeyRecord(Base64.decode(sPrekeyRec, Base64.NO_WRAP));
         } catch (IOException e) {
             Log.d(ProtocolStorage.LOGTAG, "Encountered IOException for id " + String.valueOf(signedPreKeyId));
         }
@@ -266,7 +266,7 @@ public class DatabaseManager extends SQLiteOpenHelper {
         if (cursor.moveToFirst()) {
             do {
                 try {
-                    list.add(new SignedPreKeyRecord(Base64.decode(cursor.getString(1), Base64.DEFAULT)));
+                    list.add(new SignedPreKeyRecord(Base64.decode(cursor.getString(1), Base64.NO_WRAP)));
                 } catch (IOException e) {
                     Log.d(ProtocolStorage.LOGTAG, "Encountered IOException");
                 }
@@ -309,7 +309,7 @@ public class DatabaseManager extends SQLiteOpenHelper {
         values.put(ProtocolStorage.NAME, address.getName());
         values.put(ProtocolStorage.DEVICE_ID, address.getDeviceId());
         values.put(ProtocolStorage.SIGNAL_PROTOCOL_ADDRESS, address.toString());
-        values.put(ProtocolStorage.SESSION_RECORD, Base64.encodeToString(record.serialize(), Base64.DEFAULT));
+        values.put(ProtocolStorage.SESSION_RECORD, Base64.encodeToString(record.serialize(), Base64.NO_WRAP));
         String where = ProtocolStorage.SIGNAL_PROTOCOL_ADDRESS + "=?";
         String[] whereArgs = {address.toString()};
         int rows = db.update(ProtocolStorage.SESSION_TABLENAME, values, where, whereArgs);
@@ -337,7 +337,7 @@ public class DatabaseManager extends SQLiteOpenHelper {
         db.close();
         SessionRecord sessionRecord = null;
         try {
-            sessionRecord = new SessionRecord(Base64.decode(record, Base64.DEFAULT));
+            sessionRecord = new SessionRecord(Base64.decode(record, Base64.NO_WRAP));
         } catch (IOException e) {
             Log.d(ProtocolStorage.LOGTAG, "Encountered IOException in database for address " + address.toString());
         }
