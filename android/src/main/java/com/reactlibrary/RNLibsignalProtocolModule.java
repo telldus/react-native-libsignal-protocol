@@ -6,57 +6,52 @@ import com.facebook.react.bridge.ReactContextBaseJavaModule;
 import com.facebook.react.bridge.ReactMethod;
 
 import org.whispersystems.libsignal.DuplicateMessageException;
-import org.whispersystems.libsignal.IdentityKey;
 import org.whispersystems.libsignal.IdentityKeyPair;
 import org.whispersystems.libsignal.InvalidKeyException;
 import org.whispersystems.libsignal.InvalidKeyIdException;
 import org.whispersystems.libsignal.InvalidMessageException;
 import org.whispersystems.libsignal.InvalidVersionException;
 import org.whispersystems.libsignal.LegacyMessageException;
-import org.whispersystems.libsignal.NoSessionException;
-import org.whispersystems.libsignal.SessionBuilder;
-import org.whispersystems.libsignal.SessionCipher;
-import org.whispersystems.libsignal.SignalProtocolAddress;
 import org.whispersystems.libsignal.UntrustedIdentityException;
-import org.whispersystems.libsignal.ecc.Curve;
-import org.whispersystems.libsignal.ecc.ECPublicKey;
-import org.whispersystems.libsignal.protocol.CiphertextMessage;
-import org.whispersystems.libsignal.protocol.PreKeySignalMessage;
-import org.whispersystems.libsignal.protocol.SignalMessage;
-import org.whispersystems.libsignal.state.PreKeyBundle;
 import org.whispersystems.libsignal.util.KeyHelper;
 import org.whispersystems.libsignal.state.PreKeyRecord;
 import org.whispersystems.libsignal.state.SignedPreKeyRecord;
+
+import com.facebook.react.bridge.ReadableArray;
 import com.facebook.react.bridge.WritableMap;
 import com.facebook.react.bridge.WritableArray;
 import com.facebook.react.bridge.ReadableMap;
 import com.facebook.react.bridge.Arguments;
 import com.facebook.react.bridge.Promise;
 
+import com.reactlibrary.axolotl.CryptoFailedException;
+import com.reactlibrary.axolotl.XmppAxolotlSession;
 import com.reactlibrary.storage.ProtocolStorage;
+import com.reactlibrary.axolotl.XmppAxolotlService;
 
 import android.util.Log;
 import android.util.Base64;
 
-import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.lang.Exception;
-import java.math.BigInteger;
+import java.util.ArrayList;
 import java.util.List;
 
 
 public class RNLibsignalProtocolModule extends ReactContextBaseJavaModule {
 
   private final ReactApplicationContext reactContext;
-  private static final String RN_LIBSIGNAL_ERROR = "RN_LIBSIGNAL_ERROR";
+  public static final String RN_LIBSIGNAL_ERROR = "RN_LIBSIGNAL_ERROR";
 
-  ProtocolStorage protocolStorage;
+  private ProtocolStorage protocolStorage;
+  private XmppAxolotlService xmppAxolotlService;
 
   public RNLibsignalProtocolModule(ReactApplicationContext reactContext) {
     super(reactContext);
     this.reactContext = reactContext;
 
     protocolStorage = new ProtocolStorage(reactContext);
+    xmppAxolotlService =  new XmppAxolotlService(reactContext, protocolStorage);
   }
 
   @Override
@@ -155,32 +150,8 @@ public class RNLibsignalProtocolModule extends ReactContextBaseJavaModule {
 
   @ReactMethod
   public void buildSession(String recipientId, int deviceId, ReadableMap retrievedPreKeyBundle, Promise promise) {
-    SignalProtocolAddress signalProtocolAddress = new SignalProtocolAddress(recipientId, deviceId);
-
-    // Instantiate a SessionBuilder for a remote recipientId + deviceId tuple.
-    SessionBuilder sessionBuilder = new SessionBuilder(protocolStorage, signalProtocolAddress);
-
     try {
-      int preKeyId = retrievedPreKeyBundle.getInt("preKeyId");
-      int registrationId = retrievedPreKeyBundle.getInt("registrationId");
-      ECPublicKey preKey = Curve.decodePoint(Base64.decode(retrievedPreKeyBundle.getString("preKeyPublic"), Base64.DEFAULT), 0);
-      int signedPreKeyId = retrievedPreKeyBundle.getInt("signedPreKeyId");
-      ECPublicKey signedPreKeyPublic = Curve.decodePoint(Base64.decode(retrievedPreKeyBundle.getString("signedPreKeyPublic"), Base64.DEFAULT), 0);
-      byte[] signedPreKeySignature = Base64.decode(retrievedPreKeyBundle.getString("signedPreKeySignature"), Base64.DEFAULT);
-      IdentityKey identityKey = new IdentityKey(Base64.decode(retrievedPreKeyBundle.getString("identityKey"), Base64.DEFAULT), 0);
-
-      PreKeyBundle preKeyBundle = new PreKeyBundle(
-              registrationId,
-              deviceId,
-              preKeyId,
-              preKey,
-              signedPreKeyId,
-              signedPreKeyPublic,
-              signedPreKeySignature,
-              identityKey
-              );
-      // Build a session with a PreKey retrieved from the server.
-      sessionBuilder.process(preKeyBundle);
+      xmppAxolotlService.buildSession(recipientId, deviceId, retrievedPreKeyBundle);
       promise.resolve(true);
     } catch (InvalidKeyException e) {
       e.printStackTrace();
@@ -193,12 +164,8 @@ public class RNLibsignalProtocolModule extends ReactContextBaseJavaModule {
 
   @ReactMethod
   public void encrypt (String message, String recipientId, int deviceId, Promise promise) {
-    SignalProtocolAddress signalProtocolAddress = new SignalProtocolAddress(recipientId, deviceId);
-    SessionCipher sessionCipher = new SessionCipher(protocolStorage, signalProtocolAddress);
-    CiphertextMessage messageEncryped = null;
     try {
-      messageEncryped = sessionCipher.encrypt(message.getBytes("UTF-8"));
-      promise.resolve(Base64.encodeToString(messageEncryped.serialize(), Base64.DEFAULT));
+      promise.resolve(xmppAxolotlService.encrypt(message, recipientId, deviceId));
     } catch (UntrustedIdentityException e) {
       e.printStackTrace();
       promise.reject(RN_LIBSIGNAL_ERROR, e.getMessage());
@@ -209,13 +176,35 @@ public class RNLibsignalProtocolModule extends ReactContextBaseJavaModule {
   }
 
   @ReactMethod
-  public void decrypt (String message, String recipientId, int deviceId, Promise promise) {
-    SignalProtocolAddress signalProtocolAddress = new SignalProtocolAddress(recipientId, deviceId);
-    SessionCipher sessionCipher = new SessionCipher(protocolStorage, signalProtocolAddress);
-    byte[] messageDecrypted = null;
+  public void encryptTwo (String message, String recipientId, int deviceId, Promise promise) {
     try {
-      messageDecrypted = sessionCipher.decrypt(new PreKeySignalMessage(Base64.decode(message, Base64.DEFAULT)));
-      promise.resolve(new String (messageDecrypted));
+      xmppAxolotlService.encryptTwo(message, recipientId, deviceId);
+      promise.resolve("DONE");
+    } catch (CryptoFailedException e) {
+      e.printStackTrace();
+      promise.reject(RN_LIBSIGNAL_ERROR, e.getMessage());
+    }
+  }
+
+  @ReactMethod
+  public void decryptTwo (String recipientId, int deviceId, String iV, ReadableArray keysList, String cipherText, Promise promise) {
+    try {
+      ArrayList keys = new ArrayList<>();
+      for (int i = 0; i < keysList.size(); i++) {
+        ReadableMap axKeys = keysList.getMap(i);
+        keys.add(new XmppAxolotlSession.AxolotlKey(axKeys.getInt("deviceId"), Base64.decode(axKeys.getString("key"), Base64.NO_WRAP), axKeys.getBoolean("prekey")));
+      }
+      promise.resolve(xmppAxolotlService.decryptTwo(recipientId, deviceId, Base64.decode(iV, Base64.NO_WRAP), keys, Base64.decode(cipherText, Base64.NO_WRAP)));
+    } catch (CryptoFailedException e) {
+      e.printStackTrace();
+      promise.reject(RN_LIBSIGNAL_ERROR, e.getMessage());
+    }
+  }
+
+  @ReactMethod
+  public void decrypt (String message, String recipientId, int deviceId, Promise promise) {
+    try {
+      promise.resolve(xmppAxolotlService.decrypt(message, recipientId, deviceId));
     } catch (UntrustedIdentityException e) {
       e.printStackTrace();
       promise.reject(RN_LIBSIGNAL_ERROR, e.getMessage());
