@@ -28,10 +28,12 @@ import com.reactlibrary.storage.ProtocolStorage;
 
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
+import java.util.HashMap;
 
 public class XmppAxolotlService {
     ProtocolStorage protocolStore;
     private final ReactApplicationContext reactContext;
+    HashMap<String, XmppAxolotlSession> xmppAxolotlSessionMap = new HashMap<>();
 
     public XmppAxolotlService(ReactApplicationContext context, ProtocolStorage protocolStorage) {
         protocolStore = protocolStorage;
@@ -78,23 +80,34 @@ public class XmppAxolotlService {
         return Base64.encodeToString(messageEncryped.serialize(), Base64.NO_WRAP);
     }
 
+    private XmppAxolotlSession getSession(String recipientId, Integer recepientDeviceId) {
+        String mapKey = recipientId+String.valueOf(recepientDeviceId);
+
+        if (xmppAxolotlSessionMap.containsKey(mapKey)) {
+            return xmppAxolotlSessionMap.get(mapKey);
+        }
+
+        SignalProtocolAddress signalProtocolAddress = new SignalProtocolAddress(recipientId, recepientDeviceId);
+        XmppAxolotlSession session = new XmppAxolotlSession(protocolStore, signalProtocolAddress);
+        xmppAxolotlSessionMap.put(mapKey, session);
+        return session;
+    }
+
     public WritableMap encryptOMEMO (String ownId, int ownDeviceId, String recipientId, ArrayList<Integer> deviceList, String message) throws CryptoFailedException {
 
         XmppAxolotlMessage xmppAxolotlMessage = new XmppAxolotlMessage(ownId, ownDeviceId);
         xmppAxolotlMessage.encrypt(message);
         XmppAxolotlSession remoteSessions = null;
         for (int i = 0; i < deviceList.size(); i++) {
-            SignalProtocolAddress signalProtocolAddress = new SignalProtocolAddress(recipientId, deviceList.get(i));
-            remoteSessions = new XmppAxolotlSession(protocolStore, signalProtocolAddress);
+            remoteSessions = getSession(recipientId, deviceList.get(i));
             xmppAxolotlMessage.addDevice(remoteSessions);
         }
         return xmppAxolotlMessage.getAllData();
     }
 
-    public String decryptOMEMO (String senderId, int deviceId, byte[] iV, ArrayList<XmppAxolotlSession.AxolotlKey> keysList, byte[] cipherText) throws CryptoFailedException, NotEncryptedForThisDeviceException {
-        SignalProtocolAddress signalProtocolAddress = new SignalProtocolAddress(senderId, deviceId);
-        XmppAxolotlMessage xmppAxolotlMessage = new XmppAxolotlMessage(senderId, deviceId, iV, keysList, cipherText);
-        return xmppAxolotlMessage.decrypt(new XmppAxolotlSession(protocolStore, signalProtocolAddress), deviceId);
+    public String decryptOMEMO (String senderId, int senderDeviceId, byte[] iV, ArrayList<XmppAxolotlSession.AxolotlKey> keysList, byte[] cipherText) throws CryptoFailedException, NotEncryptedForThisDeviceException {
+        XmppAxolotlMessage xmppAxolotlMessage = new XmppAxolotlMessage(senderId, senderDeviceId, iV, keysList, cipherText);
+        return xmppAxolotlMessage.decrypt(getSession(senderId, senderDeviceId), senderDeviceId);
     }
 
     public String decrypt (String message, String recipientId, int deviceId) throws InvalidVersionException, InvalidMessageException, InvalidKeyException, DuplicateMessageException, InvalidKeyIdException, UntrustedIdentityException, LegacyMessageException {
