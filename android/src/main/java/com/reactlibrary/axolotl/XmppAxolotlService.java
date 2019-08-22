@@ -93,7 +93,7 @@ public class XmppAxolotlService {
         }
         return xmppAxolotlMessage.getAllData();
     }
-    public String decryptTwo (String senderId, int deviceId, byte[] iV, ArrayList<XmppAxolotlSession.AxolotlKey> keysList, byte[] cipherText) throws CryptoFailedException {
+    public String decryptTwo (String senderId, int deviceId, byte[] iV, ArrayList<XmppAxolotlSession.AxolotlKey> keysList, byte[] cipherText) throws CryptoFailedException, NotEncryptedForThisDeviceException {
         SignalProtocolAddress signalProtocolAddress = new SignalProtocolAddress(senderId, deviceId);
         XmppAxolotlMessage xmppAxolotlMessage = new XmppAxolotlMessage(senderId, deviceId, iV, keysList, cipherText);
         return xmppAxolotlMessage.decrypt(new XmppAxolotlSession(protocolStore, signalProtocolAddress), deviceId);

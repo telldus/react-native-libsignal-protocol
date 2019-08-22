@@ -121,7 +121,7 @@ public class XmppAxolotlMessage {
         return data;
     }
 
-    private byte[] unpackKey(XmppAxolotlSession session, Integer sourceDeviceId) throws CryptoFailedException {
+    private byte[] unpackKey(XmppAxolotlSession session, Integer sourceDeviceId) throws CryptoFailedException, NotEncryptedForThisDeviceException {
         ArrayList<XmppAxolotlSession.AxolotlKey> possibleKeys = new ArrayList<>();
         for(XmppAxolotlSession.AxolotlKey key : keys) {
             if (key.deviceId == sourceDeviceId) {
@@ -134,9 +134,15 @@ public class XmppAxolotlMessage {
         return session.processReceiving(possibleKeys);
     }
 
-    public String decrypt(XmppAxolotlSession session, Integer sourceDeviceId) throws CryptoFailedException {
+    public String decrypt(XmppAxolotlSession session, Integer sourceDeviceId) throws CryptoFailedException, NotEncryptedForThisDeviceException {
         String plaintext = null;
-        byte[] key = unpackKey(session, sourceDeviceId);
+        byte[] key = null;
+        try {
+            key = unpackKey(session, sourceDeviceId);
+        } catch (NotEncryptedForThisDeviceException e) {
+            throw new NotEncryptedForThisDeviceException(e);
+        }
+
         if (key != null) {
             try {
                 if (key.length >= 32) {

@@ -25,6 +25,7 @@ import com.facebook.react.bridge.Arguments;
 import com.facebook.react.bridge.Promise;
 
 import com.reactlibrary.axolotl.CryptoFailedException;
+import com.reactlibrary.axolotl.NotEncryptedForThisDeviceException;
 import com.reactlibrary.axolotl.XmppAxolotlSession;
 import com.reactlibrary.storage.ProtocolStorage;
 import com.reactlibrary.axolotl.XmppAxolotlService;
@@ -210,6 +211,9 @@ public class RNLibsignalProtocolModule extends ReactContextBaseJavaModule {
       }
       promise.resolve(xmppAxolotlService.decryptTwo(recipientId, deviceId, Base64.decode(iV, Base64.NO_WRAP), keys, Base64.decode(cipherText, Base64.NO_WRAP)));
     } catch (CryptoFailedException e) {
+      e.printStackTrace();
+      promise.reject(RN_LIBSIGNAL_ERROR, e.getMessage());
+    } catch (NotEncryptedForThisDeviceException e) {
       e.printStackTrace();
       promise.reject(RN_LIBSIGNAL_ERROR, e.getMessage());
     }
