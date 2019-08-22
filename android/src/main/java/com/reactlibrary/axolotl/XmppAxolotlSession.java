@@ -64,7 +64,6 @@ public class XmppAxolotlSession {
             if (encryptedKey.prekey) {
                 try {
                     String pk = Base64.encodeToString(encryptedKey.key, Base64.NO_WRAP);
-                    Log.d("TEST pk", String.valueOf(pk));
                     PreKeySignalMessage preKeySignalMessage = new PreKeySignalMessage(encryptedKey.key);
                     plaintext = cipher.decrypt(preKeySignalMessage);
                 } catch (InvalidMessageException e) {
@@ -83,9 +82,6 @@ public class XmppAxolotlSession {
                     e.printStackTrace();
                 }
             }
-        }
-        if (plaintext != null) {
-            Log.d("TEST processReceiving", new String (plaintext));
         }
         return plaintext;
     }
