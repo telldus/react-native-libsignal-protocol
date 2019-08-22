@@ -37,7 +37,6 @@ import java.io.UnsupportedEncodingException;
 import java.lang.Exception;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 
 public class RNLibsignalProtocolModule extends ReactContextBaseJavaModule {
@@ -175,7 +174,7 @@ public class RNLibsignalProtocolModule extends ReactContextBaseJavaModule {
   }
 
   @ReactMethod
-  public void encrypt (String message, String recipientId, int deviceId, Promise promise) {
+  public void encryptSignalProtocol(String message, String recipientId, int deviceId, Promise promise) {
     try {
       promise.resolve(xmppAxolotlService.encrypt(message, recipientId, deviceId));
     } catch (UntrustedIdentityException e) {
@@ -188,13 +187,13 @@ public class RNLibsignalProtocolModule extends ReactContextBaseJavaModule {
   }
 
   @ReactMethod
-  public void encryptTwo (String ownId, int ownDeviceId, String recipientId, ReadableArray deviceList, String message, Promise promise) {
+  public void encryptOMEMO(String ownId, int ownDeviceId, String recipientId, ReadableArray deviceList, String message, Promise promise) {
     try {
       ArrayList<Integer> deviceIds = new ArrayList<Integer>();
       for (int i = 0; i < deviceList.size(); i++) {
         deviceIds.add(deviceList.getInt(i));
       }
-      promise.resolve(xmppAxolotlService.encryptTwo(ownId, ownDeviceId, recipientId, deviceIds, message));
+      promise.resolve(xmppAxolotlService.encryptOMEMO(ownId, ownDeviceId, recipientId, deviceIds, message));
     } catch (CryptoFailedException e) {
       e.printStackTrace();
       promise.reject(RN_LIBSIGNAL_ERROR, e.getMessage());
@@ -202,14 +201,14 @@ public class RNLibsignalProtocolModule extends ReactContextBaseJavaModule {
   }
 
   @ReactMethod
-  public void decryptTwo (String recipientId, int deviceId, String iV, ReadableArray keysList, String cipherText, Promise promise) {
+  public void decryptOMEMO(String recipientId, int deviceId, String iV, ReadableArray keysList, String cipherText, Promise promise) {
     try {
       ArrayList keys = new ArrayList<>();
       for (int i = 0; i < keysList.size(); i++) {
         ReadableMap axKeys = keysList.getMap(i);
         keys.add(new XmppAxolotlSession.AxolotlKey(axKeys.getInt("deviceId"), Base64.decode(axKeys.getString("key"), Base64.NO_WRAP), axKeys.getBoolean("prekey")));
       }
-      promise.resolve(xmppAxolotlService.decryptTwo(recipientId, deviceId, Base64.decode(iV, Base64.NO_WRAP), keys, Base64.decode(cipherText, Base64.NO_WRAP)));
+      promise.resolve(xmppAxolotlService.decryptOMEMO(recipientId, deviceId, Base64.decode(iV, Base64.NO_WRAP), keys, Base64.decode(cipherText, Base64.NO_WRAP)));
     } catch (CryptoFailedException e) {
       e.printStackTrace();
       promise.reject(RN_LIBSIGNAL_ERROR, e.getMessage());
@@ -220,7 +219,7 @@ public class RNLibsignalProtocolModule extends ReactContextBaseJavaModule {
   }
 
   @ReactMethod
-  public void decrypt (String message, String recipientId, int deviceId, Promise promise) {
+  public void decryptSignalProtocol(String message, String recipientId, int deviceId, Promise promise) {
     try {
       promise.resolve(xmppAxolotlService.decrypt(message, recipientId, deviceId));
     } catch (UntrustedIdentityException e) {

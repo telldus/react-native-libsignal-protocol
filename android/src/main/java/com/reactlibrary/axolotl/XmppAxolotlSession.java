@@ -40,22 +40,6 @@ public class XmppAxolotlSession {
         }
     }
 
-    public SignalProtocolAddress getRemoteAddress() {
-        return remoteAddress;
-    }
-
-    public static class AxolotlKey {
-        public final byte[] key;
-        public final boolean prekey;
-        public final int deviceId;
-
-        public AxolotlKey(int deviceId, byte[] key, boolean prekey) {
-            this.deviceId = deviceId;
-            this.key = key;
-            this.prekey = prekey;
-        }
-    }
-
     byte[] processReceiving(List<AxolotlKey> possibleKeys) throws CryptoFailedException {
         byte[] plaintext = null;
         Iterator<AxolotlKey> iterator = possibleKeys.iterator();
@@ -84,5 +68,21 @@ public class XmppAxolotlSession {
             }
         }
         return plaintext;
+    }
+
+    public SignalProtocolAddress getRemoteAddress() {
+        return remoteAddress;
+    }
+
+    public static class AxolotlKey {
+        public final byte[] key;
+        public final boolean prekey;
+        public final int deviceId;
+
+        public AxolotlKey(int deviceId, byte[] key, boolean prekey) {
+            this.deviceId = deviceId;
+            this.key = key;
+            this.prekey = prekey;
+        }
     }
 }

@@ -1,13 +1,9 @@
 package com.reactlibrary.axolotl;
 
-import android.content.Context;
 import android.util.Base64;
 import android.util.Log;
 
-import com.facebook.react.bridge.Arguments;
-import com.facebook.react.bridge.Promise;
 import com.facebook.react.bridge.ReactApplicationContext;
-import com.facebook.react.bridge.ReadableArray;
 import com.facebook.react.bridge.ReadableMap;
 
 import org.whispersystems.libsignal.DuplicateMessageException;
@@ -28,7 +24,6 @@ import org.whispersystems.libsignal.protocol.PreKeySignalMessage;
 import org.whispersystems.libsignal.state.PreKeyBundle;
 
 import com.facebook.react.bridge.WritableMap;
-import com.reactlibrary.RNLibsignalProtocolModule;
 import com.reactlibrary.storage.ProtocolStorage;
 
 import java.io.UnsupportedEncodingException;
@@ -37,6 +32,7 @@ import java.util.ArrayList;
 public class XmppAxolotlService {
     ProtocolStorage protocolStore;
     private final ReactApplicationContext reactContext;
+
     public XmppAxolotlService(ReactApplicationContext context, ProtocolStorage protocolStorage) {
         protocolStore = protocolStorage;
         reactContext = context;
@@ -81,7 +77,8 @@ public class XmppAxolotlService {
         CiphertextMessage messageEncryped = sessionCipher.encrypt(message.getBytes("UTF-8"));
         return Base64.encodeToString(messageEncryped.serialize(), Base64.NO_WRAP);
     }
-    public WritableMap encryptTwo (String ownId, int ownDeviceId, String recipientId, ArrayList<Integer> deviceList, String message) throws CryptoFailedException {
+
+    public WritableMap encryptOMEMO (String ownId, int ownDeviceId, String recipientId, ArrayList<Integer> deviceList, String message) throws CryptoFailedException {
 
         XmppAxolotlMessage xmppAxolotlMessage = new XmppAxolotlMessage(ownId, ownDeviceId);
         xmppAxolotlMessage.encrypt(message);
@@ -93,11 +90,13 @@ public class XmppAxolotlService {
         }
         return xmppAxolotlMessage.getAllData();
     }
-    public String decryptTwo (String senderId, int deviceId, byte[] iV, ArrayList<XmppAxolotlSession.AxolotlKey> keysList, byte[] cipherText) throws CryptoFailedException, NotEncryptedForThisDeviceException {
+
+    public String decryptOMEMO (String senderId, int deviceId, byte[] iV, ArrayList<XmppAxolotlSession.AxolotlKey> keysList, byte[] cipherText) throws CryptoFailedException, NotEncryptedForThisDeviceException {
         SignalProtocolAddress signalProtocolAddress = new SignalProtocolAddress(senderId, deviceId);
         XmppAxolotlMessage xmppAxolotlMessage = new XmppAxolotlMessage(senderId, deviceId, iV, keysList, cipherText);
         return xmppAxolotlMessage.decrypt(new XmppAxolotlSession(protocolStore, signalProtocolAddress), deviceId);
     }
+
     public String decrypt (String message, String recipientId, int deviceId) throws InvalidVersionException, InvalidMessageException, InvalidKeyException, DuplicateMessageException, InvalidKeyIdException, UntrustedIdentityException, LegacyMessageException {
         SignalProtocolAddress signalProtocolAddress = new SignalProtocolAddress(recipientId, deviceId);
         SessionCipher sessionCipher = new SessionCipher(protocolStore, signalProtocolAddress);
