@@ -27,6 +27,7 @@ import com.facebook.react.bridge.WritableMap;
 import com.reactlibrary.storage.ProtocolStorage;
 
 import java.io.UnsupportedEncodingException;
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -43,9 +44,10 @@ public class XmppAxolotlService {
     public void buildSession(String recipientId, ArrayList<ReadableMap> deviceListWithBundle) throws InvalidKeyException, UntrustedIdentityException {
         for (int i = 0; i < deviceListWithBundle.size(); i++) {
             ReadableMap rm = deviceListWithBundle.get(i);
-            int deviceId = rm.getInt("deviceId");
+            String deviceId = rm.getString("deviceId");
             ReadableMap bundle = rm.getMap("bundle");
-            SignalProtocolAddress signalProtocolAddress = new SignalProtocolAddress(recipientId, deviceId);
+            int deviceIdInt = new BigInteger(deviceId).intValue();
+            SignalProtocolAddress signalProtocolAddress = new SignalProtocolAddress(recipientId, deviceIdInt);
 
             // Instantiate a SessionBuilder for a remote recipientId + deviceId tuple.
             SessionBuilder sessionBuilder = new SessionBuilder(protocolStore, signalProtocolAddress);
@@ -60,7 +62,7 @@ public class XmppAxolotlService {
 
             PreKeyBundle preKeyBundle = new PreKeyBundle(
                     registrationId,
-                    deviceId,
+                    deviceIdInt,
                     preKeyId,
                     preKey,
                     signedPreKeyId,
@@ -80,20 +82,20 @@ public class XmppAxolotlService {
         return Base64.encodeToString(messageEncryped.serialize(), Base64.NO_WRAP);
     }
 
-    private XmppAxolotlSession getSession(String recipientId, Integer recepientDeviceId) {
+    private XmppAxolotlSession getSession(String recipientId, String recepientDeviceId) {
         String mapKey = recipientId+String.valueOf(recepientDeviceId);
 
         if (xmppAxolotlSessionMap.containsKey(mapKey)) {
             return xmppAxolotlSessionMap.get(mapKey);
         }
-
-        SignalProtocolAddress signalProtocolAddress = new SignalProtocolAddress(recipientId, recepientDeviceId);
-        XmppAxolotlSession session = new XmppAxolotlSession(protocolStore, signalProtocolAddress);
+        int deviceIdInt = new BigInteger(recepientDeviceId).intValue();
+        SignalProtocolAddress signalProtocolAddress = new SignalProtocolAddress(recipientId, deviceIdInt);
+        XmppAxolotlSession session = new XmppAxolotlSession(protocolStore, signalProtocolAddress, recepientDeviceId);
         xmppAxolotlSessionMap.put(mapKey, session);
         return session;
     }
 
-    public WritableMap encryptOMEMO (String ownId, int ownDeviceId, String recipientId, ArrayList<Integer> deviceList, String message) throws CryptoFailedException {
+    public WritableMap encryptOMEMO (String ownId, String ownDeviceId, String recipientId, ArrayList<String> deviceList, String message) throws CryptoFailedException {
 
         XmppAxolotlMessage xmppAxolotlMessage = new XmppAxolotlMessage(ownId, ownDeviceId);
         xmppAxolotlMessage.encrypt(message);
@@ -105,9 +107,9 @@ public class XmppAxolotlService {
         return xmppAxolotlMessage.getAllData();
     }
 
-    public String decryptOMEMO (String senderId, int senderDeviceId, byte[] iV, ArrayList<XmppAxolotlSession.AxolotlKey> keysList, byte[] cipherText) throws CryptoFailedException, NotEncryptedForThisDeviceException {
-        XmppAxolotlMessage xmppAxolotlMessage = new XmppAxolotlMessage(senderId, senderDeviceId, iV, keysList, cipherText);
-        return xmppAxolotlMessage.decrypt(getSession(senderId, senderDeviceId), senderDeviceId);
+    public String decryptOMEMO (String senderId, String ownDeviceId, byte[] iV, ArrayList<XmppAxolotlSession.AxolotlKey> keysList, byte[] cipherText) throws CryptoFailedException, NotEncryptedForThisDeviceException {
+        XmppAxolotlMessage xmppAxolotlMessage = new XmppAxolotlMessage(senderId, ownDeviceId, iV, keysList, cipherText);
+        return xmppAxolotlMessage.decrypt(getSession(senderId, ownDeviceId), ownDeviceId);
     }
 
     public String decrypt (String message, String recipientId, int deviceId) throws InvalidVersionException, InvalidMessageException, InvalidKeyException, DuplicateMessageException, InvalidKeyIdException, UntrustedIdentityException, LegacyMessageException {

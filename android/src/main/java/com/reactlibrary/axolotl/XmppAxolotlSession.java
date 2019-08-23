@@ -24,17 +24,19 @@ public class XmppAxolotlSession {
     private final SessionCipher cipher;
     private final ProtocolStorage protocolStorage;
     private final SignalProtocolAddress remoteAddress;
+    private final String remoteDeviceId;
 
-    public XmppAxolotlSession(ProtocolStorage store, SignalProtocolAddress remoteAddress) {
+    public XmppAxolotlSession(ProtocolStorage store, SignalProtocolAddress remoteAddress, String remoteDeviceId) {
         this.cipher = new SessionCipher(store, remoteAddress);
         this.remoteAddress = remoteAddress;
+        this.remoteDeviceId = remoteDeviceId;
         this.protocolStorage = store;
     }
 
     public AxolotlKey processSending(byte[] outgoingMessage) {
         try {
             CiphertextMessage ciphertextMessage = cipher.encrypt(outgoingMessage);
-            return new AxolotlKey(getRemoteAddress().getDeviceId(), ciphertextMessage.serialize(),ciphertextMessage.getType() == CiphertextMessage.PREKEY_TYPE);
+            return new AxolotlKey(getDeviceId(), ciphertextMessage.serialize(),ciphertextMessage.getType() == CiphertextMessage.PREKEY_TYPE);
         } catch (UntrustedIdentityException e) {
             return null;
         }
@@ -74,12 +76,16 @@ public class XmppAxolotlSession {
         return remoteAddress;
     }
 
+    public String getDeviceId() {
+        return remoteDeviceId;
+    }
+
     public static class AxolotlKey {
         public final byte[] key;
         public final boolean prekey;
-        public final int deviceId;
+        public final String deviceId;
 
-        public AxolotlKey(int deviceId, byte[] key, boolean prekey) {
+        public AxolotlKey(String deviceId, byte[] key, boolean prekey) {
             this.deviceId = deviceId;
             this.key = key;
             this.prekey = prekey;

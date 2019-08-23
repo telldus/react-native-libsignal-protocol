@@ -37,15 +37,15 @@ public class XmppAxolotlMessage {
     private byte[] iv = null;
     private final List<XmppAxolotlSession.AxolotlKey> keys;
     private final String from;
-    private final int sourceDeviceId;
-    public XmppAxolotlMessage(String from, int sourceDeviceId) {
+    private final String sourceDeviceId;
+    public XmppAxolotlMessage(String from, String sourceDeviceId) {
         this.from = from;
         this.sourceDeviceId = sourceDeviceId;
         this.keys = new ArrayList<>();
         this.iv = generateIv();
         this.innerKey = generateKey();
     }
-    public XmppAxolotlMessage(String from, int sourceDeviceId, byte[] iV, ArrayList<XmppAxolotlSession.AxolotlKey> keysList, byte[] cipherText) {
+    public XmppAxolotlMessage(String from, String sourceDeviceId, byte[] iV, ArrayList<XmppAxolotlSession.AxolotlKey> keysList, byte[] cipherText) {
         this.from = from;
         this.sourceDeviceId = sourceDeviceId;
         this.keys = keysList;
@@ -113,7 +113,7 @@ public class XmppAxolotlMessage {
         for(XmppAxolotlSession.AxolotlKey key : keys) {
             WritableMap keysRecord = Arguments.createMap();
             keysRecord.putString("key", Base64.encodeToString(key.key, Base64.NO_WRAP));
-            keysRecord.putInt("deviceId", key.deviceId);
+            keysRecord.putString("deviceId", key.deviceId);
             keysRecord.putBoolean("prekey", key.prekey);
             keysList.pushMap(keysRecord);
         }
@@ -121,10 +121,10 @@ public class XmppAxolotlMessage {
         return data;
     }
 
-    private byte[] unpackKey(XmppAxolotlSession session, Integer sourceDeviceId) throws CryptoFailedException, NotEncryptedForThisDeviceException {
+    private byte[] unpackKey(XmppAxolotlSession session, String sourceDeviceId) throws CryptoFailedException, NotEncryptedForThisDeviceException {
         ArrayList<XmppAxolotlSession.AxolotlKey> possibleKeys = new ArrayList<>();
         for(XmppAxolotlSession.AxolotlKey key : keys) {
-            if (key.deviceId == sourceDeviceId) {
+            if (key.deviceId.equals(sourceDeviceId)) {
                 possibleKeys.add(key);
             }
         }
@@ -134,7 +134,7 @@ public class XmppAxolotlMessage {
         return session.processReceiving(possibleKeys);
     }
 
-    public String decrypt(XmppAxolotlSession session, Integer sourceDeviceId) throws CryptoFailedException, NotEncryptedForThisDeviceException {
+    public String decrypt(XmppAxolotlSession session, String sourceDeviceId) throws CryptoFailedException, NotEncryptedForThisDeviceException {
         String plaintext = null;
         byte[] key = null;
         try {

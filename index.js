@@ -38,7 +38,7 @@ export type Bundle = {
     identityKey: string, // Base64 encoded string
 };
 export type DeviceIdBundle = {
-    deviceId: number,
+    deviceId: string,
     bundle: Bundle,
 };
 export type DeviceListAndBundle = Array<DeviceIdBundle>;
@@ -78,7 +78,7 @@ const decryptSignalProtocol = (encryptedMessage: string, recipientId: string, de
 };
 
 export type KeysInfo = {
-    deviceId: number,
+    deviceId: string,
     prekey: boolean,
     key: string, // Base64 encoded strig.
 };
@@ -86,12 +86,12 @@ export type KeysList = Array<KeysInfo>;
 
 // OMEMO
 
-const encryptOMEMO = (ownId: string, ownDeviceId: number, recipientId: string, recepientDeviceList: Array<number>, message: string): Promise<any> => {
+const encryptOMEMO = (ownId: string, ownDeviceId: string, recipientId: string, recepientDeviceList: Array<string>, message: string): Promise<any> => {
 	return RNLibsignalProtocol.encryptOMEMO(ownId, ownDeviceId, recipientId, recepientDeviceList, message);
 };
 // iV: Base64 encoded string.
 // encryptedMessage: Base64 encoded string.
-const decryptOMEMO = (recipientId: string, ownDeviceId: number, iV: string, keysList: KeysList, encryptedMessage: string): Promise<any> => {
+const decryptOMEMO = (recipientId: string, ownDeviceId: string, iV: string, keysList: KeysList, encryptedMessage: string): Promise<any> => {
 	return RNLibsignalProtocol.decryptOMEMO(recipientId, ownDeviceId, iV, keysList, encryptedMessage);
 };
 
