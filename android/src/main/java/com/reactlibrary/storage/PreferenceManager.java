@@ -53,4 +53,14 @@ public class PreferenceManager {
         keyPairMap.putString("privateKey", privateKey);
         return keyPairMap;
     }
+
+    public void storeEd25519OctetKeyPair(String keyPairJSONString) {
+        SharedPreferences.Editor editor = pref.edit();
+        editor.putString("Ed25519OKeyPairJSONString", keyPairJSONString);
+        editor.commit();
+    }
+    public String loadEd25519OctetKeyPair() {
+        String keyPairJSONString = pref.getString("Ed25519OKeyPairJSONString", null);
+        return keyPairJSONString;
+    }
 }
