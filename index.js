@@ -95,6 +95,27 @@ const decryptOMEMO = (recipientId: string, ownDeviceId: string, iV: string, keys
 	return RNLibsignalProtocol.decryptOMEMO(recipientId, ownDeviceId, iV, keysList, encryptedMessage);
 };
 
+
+// Others
+
+const generateCurve25519KeyPair = (): Promise<any> => {
+	return RNLibsignalProtocol.generateCurve25519KeyPair();
+};
+const storeCurve25519KeyPair = (pubicKey: string, privateKey: string): Promise<any> => {
+	return RNLibsignalProtocol.storeCurve25519KeyPair(pubicKey, privateKey);
+};
+const loadCurve25519KeyPair = (): Promise<any> => {
+	return RNLibsignalProtocol.loadCurve25519KeyPair();
+};
+
+
+const loadEd25519OctetKeyPair = (): Promise<any> => {
+	return RNLibsignalProtocol.loadEd25519OctetKeyPair();
+};
+const createJWTFromEd25519OctetKeyPair = (subject: string, issuer: string, expirationTimeStamp: string, claimName: string, claimValue: string, keyPairJSONString: string): Promise<any> => {
+	return RNLibsignalProtocol.createJWTFromEd25519OctetKeyPair(subject, issuer, expirationTimeStamp, claimName, claimValue, keyPairJSONString);
+};
+
 module.exports = {
 	generateRegistrationId,
 	generateIdentityKeyPair,
@@ -108,4 +129,11 @@ module.exports = {
 
 	encryptOMEMO,
 	decryptOMEMO,
+
+	generateCurve25519KeyPair,
+	storeCurve25519KeyPair,
+	loadCurve25519KeyPair,
+
+	loadEd25519OctetKeyPair,
+	createJWTFromEd25519OctetKeyPair,
 };

@@ -4,6 +4,9 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.util.Base64;
 
+import com.facebook.react.bridge.Arguments;
+import com.facebook.react.bridge.WritableMap;
+
 import org.whispersystems.libsignal.IdentityKeyPair;
 import org.whispersystems.libsignal.InvalidKeyException;
 
@@ -35,5 +38,19 @@ public class PreferenceManager {
             e.printStackTrace();
         }
         return identityKeyPair;
+    }
+    public void storeCurve25519KeyPair(String publicKey, String privateKey) {
+        SharedPreferences.Editor editor = pref.edit();
+        editor.putString("curve25519PublicKey", publicKey);
+        editor.putString("curve25519PrivateKey", privateKey);
+        editor.commit();
+    }
+    public WritableMap loadCurve25519KeyPair() {
+        String publicKey = pref.getString("curve25519PublicKey", null);
+        String privateKey = pref.getString("curve25519PrivateKey", null);
+        WritableMap keyPairMap = Arguments.createMap();
+        keyPairMap.putString("publicKey", publicKey);
+        keyPairMap.putString("privateKey", privateKey);
+        return keyPairMap;
     }
 }
