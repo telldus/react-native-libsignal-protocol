@@ -379,6 +379,7 @@ public class RNLibsignalProtocolModule extends ReactContextBaseJavaModule {
               .issuer(issuer)
               .expirationTime(expirationTimeN)
               .claim(claimName, claimValue)
+              .issueTime(new Date())
               .build();
 
       SignedJWT signedJWT = new SignedJWT(
