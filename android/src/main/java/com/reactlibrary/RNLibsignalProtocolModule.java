@@ -346,7 +346,7 @@ public class RNLibsignalProtocolModule extends ReactContextBaseJavaModule {
     } else {
       try {
         ReadableMap genKPMap = generateKP();
-        storeEd25519OctetKeyPair(genKPMap.getString("keyPairJSONString"), promise);
+        preferenceManager.storeEd25519OctetKeyPair(genKPMap.getString("keyPairJSONString"));
         promise.resolve(genKPMap);
       } catch (JOSEException e) {
         e.printStackTrace();
@@ -434,7 +434,7 @@ public class RNLibsignalProtocolModule extends ReactContextBaseJavaModule {
   private OctetKeyPair createOctetKeyPairFromJSONString(String keyPairJSONString) {
     OctetKeyPair octetKeyPair = null;
     try {
-      octetKeyPair = OctetKeyPair.parse(keyPairJSONString);
+      return  OctetKeyPair.parse(keyPairJSONString);
     } catch (ParseException e) {
       e.printStackTrace();
     }
