@@ -23,7 +23,7 @@
 'use strict';
 
 import { NativeModules } from 'react-native';
-const { RNLibsignalProtocol } = NativeModules;
+const { RNOMEMOCipher } = NativeModules;
 
 export type IdentityKeyPair = {
     serializedKP: string, // Base64 encoded
@@ -46,35 +46,35 @@ export type DeviceListAndBundle = Array<DeviceIdBundle>;
 // Signal Protocol
 
 const generateRegistrationId = (): Promise<any> => {
-	return RNLibsignalProtocol.generateRegistrationId();
+	return RNOMEMOCipher.generateRegistrationId();
 };
 
 const generateIdentityKeyPair = (): Promise<any> => {
-	return RNLibsignalProtocol.generateIdentityKeyPair();
+	return RNOMEMOCipher.generateIdentityKeyPair();
 };
 
 const generatePreKeys = (startId: number, count: number): Promise<any> => {
-	return RNLibsignalProtocol.generatePreKeys(startId, count);
+	return RNOMEMOCipher.generatePreKeys(startId, count);
 };
 
 const generateSignedPreKey = (identityKeyPair: IdentityKeyPair, signedKeyId: number): Promise<any> => {
-	return RNLibsignalProtocol.generateSignedPreKey(identityKeyPair, signedKeyId);
+	return RNOMEMOCipher.generateSignedPreKey(identityKeyPair, signedKeyId);
 };
 
 const buildSession = (recipientId: string, deviceListAndBundle: DeviceListAndBundle): Promise<any> => {
-	return RNLibsignalProtocol.buildSession(recipientId, deviceListAndBundle);
+	return RNOMEMOCipher.buildSession(recipientId, deviceListAndBundle);
 };
 
 const loadPreKeys = (): Promise<any> => {
-	return RNLibsignalProtocol.loadPreKeys();
+	return RNOMEMOCipher.loadPreKeys();
 };
 
 const encryptSignalProtocol = (message: string, recipientId: string, deviceId: number): Promise<any> => {
-	return RNLibsignalProtocol.encryptSignalProtocol(message, recipientId, deviceId);
+	return RNOMEMOCipher.encryptSignalProtocol(message, recipientId, deviceId);
 };
 // encryptedMessage: Base64 encoded string.
 const decryptSignalProtocol = (encryptedMessage: string, recipientId: string, deviceId: number): Promise<any> => {
-	return RNLibsignalProtocol.decryptSignalProtocol(encryptedMessage, recipientId, deviceId);
+	return RNOMEMOCipher.decryptSignalProtocol(encryptedMessage, recipientId, deviceId);
 };
 
 export type KeysInfo = {
@@ -87,33 +87,33 @@ export type KeysList = Array<KeysInfo>;
 // OMEMO
 
 const encryptOMEMO = (ownId: string, ownDeviceId: string, recipientId: string, recepientDeviceList: Array<string>, message: string): Promise<any> => {
-	return RNLibsignalProtocol.encryptOMEMO(ownId, ownDeviceId, recipientId, recepientDeviceList, message);
+	return RNOMEMOCipher.encryptOMEMO(ownId, ownDeviceId, recipientId, recepientDeviceList, message);
 };
 // iV: Base64 encoded string.
 // encryptedMessage: Base64 encoded string.
 const decryptOMEMO = (recipientId: string, ownDeviceId: string, iV: string, keysList: KeysList, encryptedMessage: string): Promise<any> => {
-	return RNLibsignalProtocol.decryptOMEMO(recipientId, ownDeviceId, iV, keysList, encryptedMessage);
+	return RNOMEMOCipher.decryptOMEMO(recipientId, ownDeviceId, iV, keysList, encryptedMessage);
 };
 
 
 // Others
 
 const generateCurve25519KeyPair = (): Promise<any> => {
-	return RNLibsignalProtocol.generateCurve25519KeyPair();
+	return RNOMEMOCipher.generateCurve25519KeyPair();
 };
 const storeCurve25519KeyPair = (pubicKey: string, privateKey: string): Promise<any> => {
-	return RNLibsignalProtocol.storeCurve25519KeyPair(pubicKey, privateKey);
+	return RNOMEMOCipher.storeCurve25519KeyPair(pubicKey, privateKey);
 };
 const loadCurve25519KeyPair = (): Promise<any> => {
-	return RNLibsignalProtocol.loadCurve25519KeyPair();
+	return RNOMEMOCipher.loadCurve25519KeyPair();
 };
 
 
 const loadEd25519OctetKeyPair = (): Promise<any> => {
-	return RNLibsignalProtocol.loadEd25519OctetKeyPair();
+	return RNOMEMOCipher.loadEd25519OctetKeyPair();
 };
 const createJWTFromEd25519OctetKeyPair = (subject: string, issuer: string, expirationTimeStamp: string, claimName: string, claimValue: string, keyPairJSONString: string): Promise<any> => {
-	return RNLibsignalProtocol.createJWTFromEd25519OctetKeyPair(subject, issuer, expirationTimeStamp, claimName, claimValue, keyPairJSONString);
+	return RNOMEMOCipher.createJWTFromEd25519OctetKeyPair(subject, issuer, expirationTimeStamp, claimName, claimValue, keyPairJSONString);
 };
 
 module.exports = {

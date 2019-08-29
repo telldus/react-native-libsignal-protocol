@@ -23,7 +23,7 @@ import javax.crypto.spec.SecretKeySpec;
 import com.facebook.react.bridge.Arguments;
 import com.facebook.react.bridge.WritableArray;
 import com.facebook.react.bridge.WritableMap;
-import com.reactlibrary.RNLibsignalProtocolModule;
+import com.reactlibrary.RNOMEMOCipherModule;
 import com.reactlibrary.utils.Compatibility;
 
 public class XmppAxolotlMessage {
@@ -59,7 +59,7 @@ public class XmppAxolotlMessage {
             generator.init(128);
             return generator.generateKey().getEncoded();
         } catch (NoSuchAlgorithmException e) {
-            Log.e(RNLibsignalProtocolModule.RN_LIBSIGNAL_ERROR, e.getMessage());
+            Log.e(RNOMEMOCipherModule.RN_OMEMO_CIPHER_ERROR, e.getMessage());
             return null;
         }
     }
