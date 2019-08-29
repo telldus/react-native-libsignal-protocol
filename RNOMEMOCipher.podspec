@@ -14,7 +14,7 @@ Pod::Spec.new do |s|
   s.source       = { :git => "https://github.com/telldus/react-native-omemo-cipher.git", :tag => "ios" }
   s.requires_arc = true
   s.source_files  = ["ios/libsignal-protocol-c/src/**/*.{h,c}", "ios/*.{h,m}"]
-  s.exclude_files = 'ios/libsignal-protocol-c/src/curve25519/ed25519/main'
+  s.preserve_paths = ["ios/libsignal-protocol-c/*"]
   s.public_header_files = [
   "ios/libsignal-protocol-c/src/signal_protocol.h", 
   "ios/libsignal-protocol-c/src/signal_protocol_types.h", 
