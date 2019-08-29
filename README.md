@@ -5,11 +5,13 @@
 
 `$ npm install react-native-omemo-cipher --save`
 
-### Mostly automatic installation
+For RN >= 60, no explicit linking required, auto linking should work.
+
+### Mostly automatic installation (RN < 60)
 
 `$ react-native link react-native-omemo-cipher`
 
-### Manual installation
+### Manual installation (RN < 60)
 
 
 #### iOS
@@ -36,9 +38,12 @@
 
 ## Usage
 ```javascript
-import RNOMEMOCipher from 'react-native-omemo-cipher';
 
-// TODO: What to do with the module?
-RNOMEMOCipher;
+import {
+  generateIdentityKeyPair,
+  encryptOMEMO,
+  decryptOMEMO,
+} from 'react-native-omemo-cipher';
+
 ```
   
