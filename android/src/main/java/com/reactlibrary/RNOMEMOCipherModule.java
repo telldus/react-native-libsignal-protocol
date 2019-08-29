@@ -60,15 +60,15 @@ import com.nimbusds.jwt.*;
 import net.minidev.json.JSONObject;
 
 
-public class RNLibsignalProtocolModule extends ReactContextBaseJavaModule {
+public class RNOMEMOCipherModule extends ReactContextBaseJavaModule {
 
   private final ReactApplicationContext reactContext;
-  public static final String RN_LIBSIGNAL_ERROR = "RN_LIBSIGNAL_ERROR";
+  public static final String RN_OMEMO_CIPHER_ERROR = "RN_OMEMO_CIPHER_ERROR";
 
   private ProtocolStorage protocolStorage;
   private XmppAxolotlService xmppAxolotlService;
 
-  public RNLibsignalProtocolModule(ReactApplicationContext reactContext) {
+  public RNOMEMOCipherModule(ReactApplicationContext reactContext) {
     super(reactContext);
     this.reactContext = reactContext;
 
@@ -78,7 +78,7 @@ public class RNLibsignalProtocolModule extends ReactContextBaseJavaModule {
 
   @Override
   public String getName() {
-    return "RNLibsignalProtocol";
+    return "RNOMEMOCipher";
   }
 
   @ReactMethod
@@ -97,7 +97,7 @@ public class RNLibsignalProtocolModule extends ReactContextBaseJavaModule {
       promise.resolve(keyPairMap);
 
     } catch (Exception e) {
-      promise.reject(RN_LIBSIGNAL_ERROR, e.getMessage());
+      promise.reject(RN_OMEMO_CIPHER_ERROR, e.getMessage());
     }
   }
 
@@ -109,7 +109,7 @@ public class RNLibsignalProtocolModule extends ReactContextBaseJavaModule {
       promise.resolve(registrationId);
     } catch (Exception e) {
       e.printStackTrace();
-      promise.reject(RN_LIBSIGNAL_ERROR, e.getMessage());
+      promise.reject(RN_OMEMO_CIPHER_ERROR, e.getMessage());
     }
   }
 
@@ -137,7 +137,7 @@ public class RNLibsignalProtocolModule extends ReactContextBaseJavaModule {
       promise.resolve(preKeyMapsArray);
     } catch (Exception e) {
       e.printStackTrace();
-      promise.reject(RN_LIBSIGNAL_ERROR, e.getMessage());
+      promise.reject(RN_OMEMO_CIPHER_ERROR, e.getMessage());
     }
   }
 
@@ -166,7 +166,7 @@ public class RNLibsignalProtocolModule extends ReactContextBaseJavaModule {
       promise.resolve(signedPreKeyMap);
     } catch (Exception e) {
       e.printStackTrace();
-      promise.reject(RN_LIBSIGNAL_ERROR, e.getMessage());
+      promise.reject(RN_OMEMO_CIPHER_ERROR, e.getMessage());
     }
   }
 
@@ -187,10 +187,10 @@ public class RNLibsignalProtocolModule extends ReactContextBaseJavaModule {
       promise.resolve(true);
     } catch (InvalidKeyException e) {
       e.printStackTrace();
-      promise.reject(RN_LIBSIGNAL_ERROR, e.getMessage());
+      promise.reject(RN_OMEMO_CIPHER_ERROR, e.getMessage());
     } catch (UntrustedIdentityException e) {
       e.printStackTrace();
-      promise.reject(RN_LIBSIGNAL_ERROR, e.getMessage());
+      promise.reject(RN_OMEMO_CIPHER_ERROR, e.getMessage());
     }
   }
 
@@ -200,10 +200,10 @@ public class RNLibsignalProtocolModule extends ReactContextBaseJavaModule {
       promise.resolve(xmppAxolotlService.encrypt(message, recipientId, deviceId));
     } catch (UntrustedIdentityException e) {
       e.printStackTrace();
-      promise.reject(RN_LIBSIGNAL_ERROR, e.getMessage());
+      promise.reject(RN_OMEMO_CIPHER_ERROR, e.getMessage());
     } catch (UnsupportedEncodingException e) {
       e.printStackTrace();
-      promise.reject(RN_LIBSIGNAL_ERROR, e.getMessage());
+      promise.reject(RN_OMEMO_CIPHER_ERROR, e.getMessage());
     }
   }
 
@@ -217,7 +217,7 @@ public class RNLibsignalProtocolModule extends ReactContextBaseJavaModule {
       promise.resolve(xmppAxolotlService.encryptOMEMO(ownId, ownDeviceId, recipientId, deviceIds, message));
     } catch (CryptoFailedException e) {
       e.printStackTrace();
-      promise.reject(RN_LIBSIGNAL_ERROR, e.getMessage());
+      promise.reject(RN_OMEMO_CIPHER_ERROR, e.getMessage());
     }
   }
 
@@ -232,10 +232,10 @@ public class RNLibsignalProtocolModule extends ReactContextBaseJavaModule {
       promise.resolve(xmppAxolotlService.decryptOMEMO(recipientId, ownDeviceId, Base64.decode(iV, Base64.NO_WRAP), keys, Base64.decode(cipherText, Base64.NO_WRAP)));
     } catch (CryptoFailedException e) {
       e.printStackTrace();
-      promise.reject(RN_LIBSIGNAL_ERROR, e.getMessage());
+      promise.reject(RN_OMEMO_CIPHER_ERROR, e.getMessage());
     } catch (NotEncryptedForThisDeviceException e) {
       e.printStackTrace();
-      promise.reject(RN_LIBSIGNAL_ERROR, e.getMessage());
+      promise.reject(RN_OMEMO_CIPHER_ERROR, e.getMessage());
     }
   }
 
@@ -245,25 +245,25 @@ public class RNLibsignalProtocolModule extends ReactContextBaseJavaModule {
       promise.resolve(xmppAxolotlService.decrypt(message, recipientId, deviceId));
     } catch (UntrustedIdentityException e) {
       e.printStackTrace();
-      promise.reject(RN_LIBSIGNAL_ERROR, e.getMessage());
+      promise.reject(RN_OMEMO_CIPHER_ERROR, e.getMessage());
     } catch (LegacyMessageException e) {
       e.printStackTrace();
-      promise.reject(RN_LIBSIGNAL_ERROR, e.getMessage());
+      promise.reject(RN_OMEMO_CIPHER_ERROR, e.getMessage());
     } catch (InvalidMessageException e) {
       e.printStackTrace();
-      promise.reject(RN_LIBSIGNAL_ERROR, e.getMessage());
+      promise.reject(RN_OMEMO_CIPHER_ERROR, e.getMessage());
     } catch (DuplicateMessageException e) {
       e.printStackTrace();
-      promise.reject(RN_LIBSIGNAL_ERROR, e.getMessage());
+      promise.reject(RN_OMEMO_CIPHER_ERROR, e.getMessage());
     } catch (InvalidVersionException e) {
       e.printStackTrace();
-      promise.reject(RN_LIBSIGNAL_ERROR, e.getMessage());
+      promise.reject(RN_OMEMO_CIPHER_ERROR, e.getMessage());
     } catch (InvalidKeyIdException e) {
       e.printStackTrace();
-      promise.reject(RN_LIBSIGNAL_ERROR, e.getMessage());
+      promise.reject(RN_OMEMO_CIPHER_ERROR, e.getMessage());
     } catch (InvalidKeyException e) {
       e.printStackTrace();
-      promise.reject(RN_LIBSIGNAL_ERROR, e.getMessage());
+      promise.reject(RN_OMEMO_CIPHER_ERROR, e.getMessage());
     }
   }
 
@@ -322,7 +322,7 @@ public class RNLibsignalProtocolModule extends ReactContextBaseJavaModule {
       promise.resolve(generateKP());
     } catch (JOSEException e) {
       e.printStackTrace();
-      promise.reject(RN_LIBSIGNAL_ERROR, e.getMessage());
+      promise.reject(RN_OMEMO_CIPHER_ERROR, e.getMessage());
     }
   }
 
@@ -350,7 +350,7 @@ public class RNLibsignalProtocolModule extends ReactContextBaseJavaModule {
         promise.resolve(genKPMap);
       } catch (JOSEException e) {
         e.printStackTrace();
-        promise.reject(RN_LIBSIGNAL_ERROR, e.getMessage());
+        promise.reject(RN_OMEMO_CIPHER_ERROR, e.getMessage());
       }
     }
   }
@@ -397,7 +397,7 @@ public class RNLibsignalProtocolModule extends ReactContextBaseJavaModule {
       promise.resolve(dataMap);
     } catch (JOSEException e) {
       e.printStackTrace();
-      promise.reject(RN_LIBSIGNAL_ERROR, e.getMessage());
+      promise.reject(RN_OMEMO_CIPHER_ERROR, e.getMessage());
     }
   }
 
@@ -425,10 +425,10 @@ public class RNLibsignalProtocolModule extends ReactContextBaseJavaModule {
       }
     } catch (JOSEException e) {
       e.printStackTrace();
-      promise.reject(RN_LIBSIGNAL_ERROR, e.getMessage());
+      promise.reject(RN_OMEMO_CIPHER_ERROR, e.getMessage());
     } catch (ParseException e) {
       e.printStackTrace();
-      promise.reject(RN_LIBSIGNAL_ERROR, e.getMessage());
+      promise.reject(RN_OMEMO_CIPHER_ERROR, e.getMessage());
     }
   }
 

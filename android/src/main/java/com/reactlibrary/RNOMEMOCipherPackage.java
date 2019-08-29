@@ -11,15 +11,15 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-public class RNLibsignalProtocolPackage implements ReactPackage {
+public class RNOMEMOCipherPackage implements ReactPackage {
 
-  public RNLibsignalProtocolPackage() {}
+  public RNOMEMOCipherPackage() {}
 
   @Override
   public List<NativeModule> createNativeModules(
       ReactApplicationContext reactContext) {
     List<NativeModule> modules = new ArrayList<>();
-    modules.add(new RNLibsignalProtocolModule(reactContext));
+    modules.add(new RNOMEMOCipherModule(reactContext));
     return modules;
   }
 

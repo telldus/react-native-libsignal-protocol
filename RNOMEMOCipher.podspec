@@ -1,10 +1,10 @@
 
 Pod::Spec.new do |s|
-  s.name         = "RNLibsignalProtocol"
+  s.name         = "RNOMEMOCipher"
   s.version      = "1.0.0"
-  s.summary      = "RNLibsignalProtocol"
+  s.summary      = "RNOMEMOCipher"
   s.description  = <<-DESC
-                  RNLibsignalProtocol
+                  RNOMEMOCipher
                    DESC
   s.homepage     = "https://github.com/telldus/react-native-omemo-cipher.git"
   s.license      = "MIT"
