@@ -6,12 +6,12 @@ Pod::Spec.new do |s|
   s.description  = <<-DESC
                   RNLibsignalProtocol
                    DESC
-  s.homepage     = "https://github.com/telldus/react-native-libsignal-protocol.git"
+  s.homepage     = "https://github.com/telldus/react-native-omemo-cipher.git"
   s.license      = "MIT"
   # s.license      = { :type => "MIT", :file => "FILE_LICENSE" }
   s.author             = { "author" => "rimnesh.fernandez@telldus.com" }
   s.platform     = :ios, "9.0"
-  s.source       = { :git => "https://github.com/telldus/react-native-libsignal-protocol.git", :tag => "master" }
+  s.source       = { :git => "https://github.com/telldus/react-native-omemo-cipher.git", :tag => "master" }
   s.source_files  = "ios/*"
   s.preserve_paths = 'ios/*'
   s.requires_arc = true

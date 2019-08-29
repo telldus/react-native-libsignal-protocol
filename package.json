@@ -1,6 +1,6 @@
 
 {
-  "name": "react-native-libsignal-protocol",
+  "name": "react-native-omemo-cipher",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
