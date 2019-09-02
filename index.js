@@ -112,8 +112,8 @@ const loadCurve25519KeyPair = (): Promise<any> => {
 const loadEd25519OctetKeyPair = (): Promise<any> => {
 	return RNOMEMOCipher.loadEd25519OctetKeyPair();
 };
-const createJWTFromEd25519OctetKeyPair = (subject: string, issuer: string, expirationTimeStamp: string, claimName: string, claimValue: string, keyPairJSONString: string): Promise<any> => {
-	return RNOMEMOCipher.createJWTFromEd25519OctetKeyPair(subject, issuer, expirationTimeStamp, claimName, claimValue, keyPairJSONString);
+const createJWTFromEd25519OctetKeyPair = (subject: string, issuer: string, expirationTimeStamp: string, issueTimeStamp: string, claimName: string, claimValue: string, keyPairJSONString: string): Promise<any> => {
+	return RNOMEMOCipher.createJWTFromEd25519OctetKeyPair(subject, issuer, expirationTimeStamp, issueTimeStamp, claimName, claimValue, keyPairJSONString);
 };
 
 module.exports = {

@@ -360,6 +360,7 @@ public class RNOMEMOCipherModule extends ReactContextBaseJavaModule {
           String subject,
           String issuer,
           String expirationTimeStamp,
+          String issueTime,
           String claimName,
           String claimValue,
           String keyPairJSONString,
@@ -368,6 +369,7 @@ public class RNOMEMOCipherModule extends ReactContextBaseJavaModule {
     OctetKeyPair jwk = null;
     try {
       Date expirationTimeN = new Date((long) Long.parseLong(expirationTimeStamp));
+      Date issueTimeN = new Date((long) Long.parseLong(issueTime));
       jwk = createOctetKeyPairFromJSONString(keyPairJSONString);
 
       // Create the EdDSA signer
@@ -379,7 +381,7 @@ public class RNOMEMOCipherModule extends ReactContextBaseJavaModule {
               .issuer(issuer)
               .expirationTime(expirationTimeN)
               .claim(claimName, claimValue)
-              .issueTime(new Date())
+              .issueTime(issueTimeN)
               .build();
 
       SignedJWT signedJWT = new SignedJWT(
