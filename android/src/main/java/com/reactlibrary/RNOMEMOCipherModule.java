@@ -367,7 +367,7 @@ public class RNOMEMOCipherModule extends ReactContextBaseJavaModule {
     // Generate a key pair with Ed25519 curve
     OctetKeyPair jwk = null;
     try {
-      Date expirationTimeN = new Date((long) Long.parseLong(expirationTimeStamp) * 1000);
+      Date expirationTimeN = new Date((long) Long.parseLong(expirationTimeStamp));
       jwk = createOctetKeyPairFromJSONString(keyPairJSONString);
 
       // Create the EdDSA signer
