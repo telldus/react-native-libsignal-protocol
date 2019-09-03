@@ -81,6 +81,10 @@ public class RNOMEMOCipherModule extends ReactContextBaseJavaModule {
     return "RNOMEMOCipher";
   }
 
+  /**
+   * libsignal
+   */
+
   @ReactMethod
   public void generateIdentityKeyPair(Promise promise) {
     try {
@@ -208,6 +212,39 @@ public class RNOMEMOCipherModule extends ReactContextBaseJavaModule {
   }
 
   @ReactMethod
+  public void decryptSignalProtocol(String message, String recipientId, int deviceId, Promise promise) {
+    try {
+      promise.resolve(xmppAxolotlService.decrypt(message, recipientId, deviceId));
+    } catch (UntrustedIdentityException e) {
+      e.printStackTrace();
+      promise.reject(RN_OMEMO_CIPHER_ERROR, e.getMessage());
+    } catch (LegacyMessageException e) {
+      e.printStackTrace();
+      promise.reject(RN_OMEMO_CIPHER_ERROR, e.getMessage());
+    } catch (InvalidMessageException e) {
+      e.printStackTrace();
+      promise.reject(RN_OMEMO_CIPHER_ERROR, e.getMessage());
+    } catch (DuplicateMessageException e) {
+      e.printStackTrace();
+      promise.reject(RN_OMEMO_CIPHER_ERROR, e.getMessage());
+    } catch (InvalidVersionException e) {
+      e.printStackTrace();
+      promise.reject(RN_OMEMO_CIPHER_ERROR, e.getMessage());
+    } catch (InvalidKeyIdException e) {
+      e.printStackTrace();
+      promise.reject(RN_OMEMO_CIPHER_ERROR, e.getMessage());
+    } catch (InvalidKeyException e) {
+      e.printStackTrace();
+      promise.reject(RN_OMEMO_CIPHER_ERROR, e.getMessage());
+    }
+  }
+
+
+  /**
+   * OMEMO
+   */
+
+  @ReactMethod
   public void encryptOMEMO(String ownId, String ownDeviceId, String recipientId, ReadableArray deviceList, String message, Promise promise) {
     try {
       ArrayList<String> deviceIds = new ArrayList<String>();
@@ -239,60 +276,10 @@ public class RNOMEMOCipherModule extends ReactContextBaseJavaModule {
     }
   }
 
-  @ReactMethod
-  public void decryptSignalProtocol(String message, String recipientId, int deviceId, Promise promise) {
-    try {
-      promise.resolve(xmppAxolotlService.decrypt(message, recipientId, deviceId));
-    } catch (UntrustedIdentityException e) {
-      e.printStackTrace();
-      promise.reject(RN_OMEMO_CIPHER_ERROR, e.getMessage());
-    } catch (LegacyMessageException e) {
-      e.printStackTrace();
-      promise.reject(RN_OMEMO_CIPHER_ERROR, e.getMessage());
-    } catch (InvalidMessageException e) {
-      e.printStackTrace();
-      promise.reject(RN_OMEMO_CIPHER_ERROR, e.getMessage());
-    } catch (DuplicateMessageException e) {
-      e.printStackTrace();
-      promise.reject(RN_OMEMO_CIPHER_ERROR, e.getMessage());
-    } catch (InvalidVersionException e) {
-      e.printStackTrace();
-      promise.reject(RN_OMEMO_CIPHER_ERROR, e.getMessage());
-    } catch (InvalidKeyIdException e) {
-      e.printStackTrace();
-      promise.reject(RN_OMEMO_CIPHER_ERROR, e.getMessage());
-    } catch (InvalidKeyException e) {
-      e.printStackTrace();
-      promise.reject(RN_OMEMO_CIPHER_ERROR, e.getMessage());
-    }
-  }
-
 
   /**
-   *
-   * This can be used to get the latest prekeys set
-   * may be after decrypt, and update the user's bundle info.
-   * (becuse after decryption the used prekey is removed)
+   * Curve25519
    */
-  @ReactMethod
-  public void loadPreKeys(Promise promise) {
-    List<PreKeyRecord> preKeys = protocolStorage.loadPreKeys();
-
-    WritableArray preKeyMapsArray = Arguments.createArray();
-    for (PreKeyRecord key : preKeys) {
-      String preKeyPublic = Base64.encodeToString(key.getKeyPair().getPublicKey().serialize(), Base64.NO_WRAP);
-      String preKeyPrivate = Base64.encodeToString(key.getKeyPair().getPrivateKey().serialize(), Base64.NO_WRAP);
-      int preKeyId = key.getId();
-      String seriaizedPreKey = Base64.encodeToString(key.serialize(), Base64.NO_WRAP);
-      WritableMap preKeyMap = Arguments.createMap();
-      preKeyMap.putString("preKeyPublic", preKeyPublic);
-      preKeyMap.putString("preKeyPrivate", preKeyPrivate);
-      preKeyMap.putInt("preKeyId", preKeyId);
-      preKeyMap.putString("seriaizedPreKey", seriaizedPreKey);
-      preKeyMapsArray.pushMap(preKeyMap);
-    }
-    promise.resolve(preKeyMapsArray);
-  }
 
   @ReactMethod
   public void generateCurve25519KeyPair(Promise promise) {
@@ -304,17 +291,24 @@ public class RNOMEMOCipherModule extends ReactContextBaseJavaModule {
     keyPairMap.putString("privateKey", privateKey);
     promise.resolve(keyPairMap);
   }
+
   @ReactMethod
   public void storeCurve25519KeyPair(String publicKey, String privateKey, Promise promise) {
     PreferenceManager preferenceManager = new PreferenceManager(reactContext);
     preferenceManager.storeCurve25519KeyPair(publicKey, privateKey);
     promise.resolve(true);
   }
+
   @ReactMethod
   public void loadCurve25519KeyPair(Promise promise) {
     PreferenceManager preferenceManager = new PreferenceManager(reactContext);
     promise.resolve(preferenceManager.loadCurve25519KeyPair());
   }
+
+
+  /**
+   * Ed25519OctetKeyPair
+   */
 
   @ReactMethod
   public void generateEd25519OctetKeyPair(Promise promise) {
@@ -456,5 +450,36 @@ public class RNOMEMOCipherModule extends ReactContextBaseJavaModule {
     dataMap.putString("keyPairJSONString", jwk.toJSONString());
     dataMap.putString("publicJWKString", jwk.toPublicJWK().toJSONString());
     return dataMap;
+  }
+
+
+  /**
+   * Others
+   */
+
+  /**
+   *
+   * This can be used to get the latest prekeys set
+   * may be after decrypt, and update the user's bundle info.
+   * (becuse after decryption the used prekey is removed)
+   */
+  @ReactMethod
+  public void loadPreKeys(Promise promise) {
+    List<PreKeyRecord> preKeys = protocolStorage.loadPreKeys();
+
+    WritableArray preKeyMapsArray = Arguments.createArray();
+    for (PreKeyRecord key : preKeys) {
+      String preKeyPublic = Base64.encodeToString(key.getKeyPair().getPublicKey().serialize(), Base64.NO_WRAP);
+      String preKeyPrivate = Base64.encodeToString(key.getKeyPair().getPrivateKey().serialize(), Base64.NO_WRAP);
+      int preKeyId = key.getId();
+      String seriaizedPreKey = Base64.encodeToString(key.serialize(), Base64.NO_WRAP);
+      WritableMap preKeyMap = Arguments.createMap();
+      preKeyMap.putString("preKeyPublic", preKeyPublic);
+      preKeyMap.putString("preKeyPrivate", preKeyPrivate);
+      preKeyMap.putInt("preKeyId", preKeyId);
+      preKeyMap.putString("seriaizedPreKey", seriaizedPreKey);
+      preKeyMapsArray.pushMap(preKeyMap);
+    }
+    promise.resolve(preKeyMapsArray);
   }
 }
