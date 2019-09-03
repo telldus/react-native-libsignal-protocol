@@ -249,6 +249,9 @@ public class DatabaseManager extends SQLiteOpenHelper {
         }
         cursor.close();
         db.close();
+        if (sPrekeyRec == "" || sPrekeyRec == null) {
+            return sPreKeyRecord;
+        }
         try {
             sPreKeyRecord = new SignedPreKeyRecord(Base64.decode(sPrekeyRec, Base64.NO_WRAP));
         } catch (IOException e) {

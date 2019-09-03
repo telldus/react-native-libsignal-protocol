@@ -89,20 +89,23 @@ public class RNOMEMOCipherModule extends ReactContextBaseJavaModule {
   public void generateIdentityKeyPair(Promise promise) {
     try {
       IdentityKeyPair identityKeyPair = KeyHelper.generateIdentityKeyPair();
-      String publicKey = Base64.encodeToString(identityKeyPair.getPublicKey().serialize(), Base64.NO_WRAP);
-      String privateKey = Base64.encodeToString(identityKeyPair.getPrivateKey().serialize(), Base64.NO_WRAP);
-      String serializedKP = Base64.encodeToString(identityKeyPair.serialize(), Base64.NO_WRAP);
-      WritableMap keyPairMap = Arguments.createMap();
-      keyPairMap.putString("publicKey", publicKey);
-      keyPairMap.putString("privateKey", privateKey);
-      keyPairMap.putString("serializedKP", serializedKP);
-
       protocolStorage.setIdentityKeyPair(identityKeyPair);
-      promise.resolve(keyPairMap);
+      promise.resolve(prepareIKP(identityKeyPair));
 
     } catch (Exception e) {
       promise.reject(RN_OMEMO_CIPHER_ERROR, e.getMessage());
     }
+  }
+
+  private WritableMap prepareIKP(IdentityKeyPair identityKeyPair) {
+    String publicKey = Base64.encodeToString(identityKeyPair.getPublicKey().serialize(), Base64.NO_WRAP);
+    String privateKey = Base64.encodeToString(identityKeyPair.getPrivateKey().serialize(), Base64.NO_WRAP);
+    String serializedKP = Base64.encodeToString(identityKeyPair.serialize(), Base64.NO_WRAP);
+    WritableMap keyPairMap = Arguments.createMap();
+    keyPairMap.putString("publicKey", publicKey);
+    keyPairMap.putString("privateKey", privateKey);
+    keyPairMap.putString("serializedKP", serializedKP);
+    return keyPairMap;
   }
 
   @ReactMethod
@@ -152,26 +155,31 @@ public class RNOMEMOCipherModule extends ReactContextBaseJavaModule {
 
       IdentityKeyPair IKP = new IdentityKeyPair(serialized);
       SignedPreKeyRecord signedPreKey = KeyHelper.generateSignedPreKey(IKP, signedKeyId);
-      String signedPreKeyPublic = Base64.encodeToString(signedPreKey.getKeyPair().getPublicKey().serialize(), Base64.NO_WRAP);
-      String signedPreKeyPrivate = Base64.encodeToString(signedPreKey.getKeyPair().getPrivateKey().serialize(), Base64.NO_WRAP);
-      String signedPreKeySignature = Base64.encodeToString(signedPreKey.getSignature(), Base64.NO_WRAP);
       int signedPreKeyId = signedPreKey.getId();
-      String seriaizedSignedPreKey = Base64.encodeToString(signedPreKey.serialize(), Base64.NO_WRAP);
-
-      WritableMap signedPreKeyMap = Arguments.createMap();
-      signedPreKeyMap.putString("signedPreKeyPublic", signedPreKeyPublic);
-      signedPreKeyMap.putString("signedPreKeyPrivate", signedPreKeyPrivate);
-      signedPreKeyMap.putString("signedPreKeySignature", signedPreKeySignature);
-      signedPreKeyMap.putInt("signedPreKeyId", signedPreKeyId);
-      signedPreKeyMap.putString("seriaizedSignedPreKey", seriaizedSignedPreKey);
 
       protocolStorage.storeSignedPreKey(signedPreKeyId, signedPreKey);
 
-      promise.resolve(signedPreKeyMap);
+      promise.resolve(prepareSignedPK(signedPreKey));
     } catch (Exception e) {
       e.printStackTrace();
       promise.reject(RN_OMEMO_CIPHER_ERROR, e.getMessage());
     }
+  }
+
+  private WritableMap prepareSignedPK(SignedPreKeyRecord signedPreKey) {
+    String signedPreKeyPublic = Base64.encodeToString(signedPreKey.getKeyPair().getPublicKey().serialize(), Base64.NO_WRAP);
+    String signedPreKeyPrivate = Base64.encodeToString(signedPreKey.getKeyPair().getPrivateKey().serialize(), Base64.NO_WRAP);
+    String signedPreKeySignature = Base64.encodeToString(signedPreKey.getSignature(), Base64.NO_WRAP);
+    int signedPreKeyId = signedPreKey.getId();
+    String seriaizedSignedPreKey = Base64.encodeToString(signedPreKey.serialize(), Base64.NO_WRAP);
+
+    WritableMap signedPreKeyMap = Arguments.createMap();
+    signedPreKeyMap.putString("signedPreKeyPublic", signedPreKeyPublic);
+    signedPreKeyMap.putString("signedPreKeyPrivate", signedPreKeyPrivate);
+    signedPreKeyMap.putString("signedPreKeySignature", signedPreKeySignature);
+    signedPreKeyMap.putInt("signedPreKeyId", signedPreKeyId);
+    signedPreKeyMap.putString("seriaizedSignedPreKey", seriaizedSignedPreKey);
+    return signedPreKeyMap;
   }
 
   @ReactMethod
@@ -454,7 +462,7 @@ public class RNOMEMOCipherModule extends ReactContextBaseJavaModule {
 
 
   /**
-   * Others
+   * libsignal utilities
    */
 
   /**
@@ -481,5 +489,35 @@ public class RNOMEMOCipherModule extends ReactContextBaseJavaModule {
       preKeyMapsArray.pushMap(preKeyMap);
     }
     promise.resolve(preKeyMapsArray);
+  }
+
+  @ReactMethod
+  public void loadIdentityKeyPair(Promise promise) {
+    IdentityKeyPair identityKeyPair = protocolStorage.getIdentityKeyPair();
+    if (identityKeyPair == null) {
+      promise.resolve(identityKeyPair);
+    } else {
+      promise.resolve(prepareIKP(identityKeyPair));
+    }
+  }
+
+  @ReactMethod
+  public void loadRegistrationId(Promise promise) {
+    promise.resolve(protocolStorage.getLocalRegistrationId());
+  }
+
+  @ReactMethod
+  public void loadSignedPreKey(int signedPreKeyId, Promise promise) {
+    try {
+      SignedPreKeyRecord signedPreKeyRecord = protocolStorage.loadSignedPreKey(signedPreKeyId);
+      if (signedPreKeyRecord == null) {
+        promise.resolve(signedPreKeyRecord);
+      } else {
+        promise.resolve(prepareSignedPK(signedPreKeyRecord));
+      }
+    } catch (InvalidKeyIdException e) {
+      e.printStackTrace();
+      promise.reject(RN_OMEMO_CIPHER_ERROR, e.getMessage());
+    }
   }
 }

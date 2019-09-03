@@ -32,6 +32,9 @@ public class PreferenceManager {
     public IdentityKeyPair getIdentityKeyPair() {
         String identityKeyPairString = pref.getString("identityKeyPair", null);
         IdentityKeyPair identityKeyPair = null;
+        if (identityKeyPairString == null) {
+            return identityKeyPair;
+        }
         try {
             identityKeyPair = new IdentityKeyPair(Base64.decode(identityKeyPairString, Base64.NO_WRAP));
         } catch (InvalidKeyException e) {

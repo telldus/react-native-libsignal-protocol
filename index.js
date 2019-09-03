@@ -65,16 +65,28 @@ const buildSession = (recipientId: string, deviceListAndBundle: DeviceListAndBun
 	return RNOMEMOCipher.buildSession(recipientId, deviceListAndBundle);
 };
 
-const loadPreKeys = (): Promise<any> => {
-	return RNOMEMOCipher.loadPreKeys();
-};
-
 const encryptSignalProtocol = (message: string, recipientId: string, deviceId: number): Promise<any> => {
 	return RNOMEMOCipher.encryptSignalProtocol(message, recipientId, deviceId);
 };
 // encryptedMessage: Base64 encoded string.
 const decryptSignalProtocol = (encryptedMessage: string, recipientId: string, deviceId: number): Promise<any> => {
 	return RNOMEMOCipher.decryptSignalProtocol(encryptedMessage, recipientId, deviceId);
+};
+
+const loadRegistrationId = (): Promise<any> => {
+	return RNOMEMOCipher.loadRegistrationId();
+};
+
+const loadIdentityKeyPair = (): Promise<any> => {
+	return RNOMEMOCipher.loadIdentityKeyPair();
+};
+
+const loadSignedPreKey = (signedPreKeyId: number): Promise<any> => {
+	return RNOMEMOCipher.loadSignedPreKey(signedPreKeyId);
+};
+
+const loadPreKeys = (): Promise<any> => {
+	return RNOMEMOCipher.loadPreKeys();
 };
 
 export type KeysInfo = {
@@ -125,6 +137,9 @@ module.exports = {
 	encryptSignalProtocol,
 	decryptSignalProtocol,
 
+	loadRegistrationId,
+	loadIdentityKeyPair,
+	loadSignedPreKey,
 	loadPreKeys,
 
 	encryptOMEMO,
