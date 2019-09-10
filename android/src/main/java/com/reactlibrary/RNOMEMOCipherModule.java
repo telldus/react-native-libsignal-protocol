@@ -281,6 +281,8 @@ public class RNOMEMOCipherModule extends ReactContextBaseJavaModule {
     } catch (NotEncryptedForThisDeviceException e) {
       e.printStackTrace();
       promise.reject(RN_OMEMO_CIPHER_ERROR, e.getMessage());
+    } catch (AssertionError e) {
+      promise.reject(RN_OMEMO_CIPHER_ERROR, e.getMessage());
     }
   }
 
