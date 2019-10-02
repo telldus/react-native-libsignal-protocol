@@ -107,7 +107,7 @@ public class XmppAxolotlService {
         return xmppAxolotlMessage.getAllData();
     }
 
-    public String decryptOMEMO (String senderId, String ownDeviceId, byte[] iV, ArrayList<XmppAxolotlSession.AxolotlKey> keysList, byte[] cipherText) throws CryptoFailedException, NotEncryptedForThisDeviceException {
+    public String decryptOMEMO (String senderId, String ownDeviceId, byte[] iV, ArrayList<XmppAxolotlSession.AxolotlKey> keysList, byte[] cipherText) throws CryptoFailedException, NotEncryptedForThisDeviceException, DuplicateMessageException {
         XmppAxolotlMessage xmppAxolotlMessage = new XmppAxolotlMessage(senderId, ownDeviceId, iV, keysList, cipherText);
         return xmppAxolotlMessage.decrypt(getSession(senderId, ownDeviceId), ownDeviceId);
     }

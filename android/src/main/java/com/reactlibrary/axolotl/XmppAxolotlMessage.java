@@ -26,6 +26,8 @@ import com.facebook.react.bridge.WritableMap;
 import com.reactlibrary.RNOMEMOCipherModule;
 import com.reactlibrary.utils.Compatibility;
 
+import org.whispersystems.libsignal.DuplicateMessageException;
+
 public class XmppAxolotlMessage {
     private static final String KEYTYPE = "AES";
     private static final String CIPHERMODE = "AES/GCM/NoPadding";
@@ -121,7 +123,7 @@ public class XmppAxolotlMessage {
         return data;
     }
 
-    private byte[] unpackKey(XmppAxolotlSession session, String sourceDeviceId) throws CryptoFailedException, NotEncryptedForThisDeviceException, AssertionError {
+    private byte[] unpackKey(XmppAxolotlSession session, String sourceDeviceId) throws CryptoFailedException, NotEncryptedForThisDeviceException, AssertionError, DuplicateMessageException {
         ArrayList<XmppAxolotlSession.AxolotlKey> possibleKeys = new ArrayList<>();
         for(XmppAxolotlSession.AxolotlKey key : keys) {
             if (key.deviceId.equals(sourceDeviceId)) {
@@ -134,7 +136,7 @@ public class XmppAxolotlMessage {
         return session.processReceiving(possibleKeys);
     }
 
-    public String decrypt(XmppAxolotlSession session, String sourceDeviceId) throws CryptoFailedException, NotEncryptedForThisDeviceException, AssertionError {
+    public String decrypt(XmppAxolotlSession session, String sourceDeviceId) throws CryptoFailedException, NotEncryptedForThisDeviceException, AssertionError, DuplicateMessageException {
         String plaintext = null;
         byte[] key = null;
         try {

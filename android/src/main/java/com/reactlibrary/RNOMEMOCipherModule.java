@@ -283,6 +283,8 @@ public class RNOMEMOCipherModule extends ReactContextBaseJavaModule {
       promise.reject(RN_OMEMO_CIPHER_ERROR, e.getMessage());
     } catch (AssertionError e) {
       promise.reject(RN_OMEMO_CIPHER_ERROR, e.getMessage());
+    } catch (DuplicateMessageException e) {
+      promise.reject(RN_OMEMO_CIPHER_ERROR, e.getMessage());
     }
   }
 

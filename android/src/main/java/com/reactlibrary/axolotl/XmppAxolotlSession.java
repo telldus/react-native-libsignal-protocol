@@ -42,7 +42,7 @@ public class XmppAxolotlSession {
         }
     }
 
-    byte[] processReceiving(List<AxolotlKey> possibleKeys) throws CryptoFailedException, AssertionError {
+    byte[] processReceiving(List<AxolotlKey> possibleKeys) throws CryptoFailedException, AssertionError, DuplicateMessageException {
         byte[] plaintext = null;
         Iterator<AxolotlKey> iterator = possibleKeys.iterator();
         while (iterator.hasNext()) {
@@ -55,8 +55,6 @@ public class XmppAxolotlSession {
                 } catch (InvalidMessageException e) {
                     e.printStackTrace();
                 } catch (InvalidVersionException e) {
-                    e.printStackTrace();
-                } catch (DuplicateMessageException e) {
                     e.printStackTrace();
                 } catch (InvalidKeyException e) {
                     e.printStackTrace();
